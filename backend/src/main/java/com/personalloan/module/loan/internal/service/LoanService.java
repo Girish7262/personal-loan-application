@@ -200,7 +200,24 @@ public class LoanService {
      */
     @Transactional
     public LoanApplicationResponse updateApplicationStatus(Long loanId, LoanStatus targetStatus, Long actorUserId, String currentUserEmail) {
-        log.info("Transitioning loan status for loan ID: {} to {}", loanId, targetStatus);
+        return updateApplicationStatus(loanId, targetStatus, null, null, actorUserId, currentUserEmail);
+    }
+
+    /**
+     * Updates/transitions status, allowing overriding loan amounts and interest rates.
+     */
+    @Transactional
+    public LoanApplicationResponse updateApplicationStatus(
+            Long loanId,
+            LoanStatus targetStatus,
+            BigDecimal approvedAmount,
+            BigDecimal interestRate,
+            Long actorUserId,
+            String currentUserEmail) {
+
+        log.info("Transitioning loan status for loan ID: {} to {} with approvedAmount: {}, interestRate: {}", 
+                loanId, targetStatus, approvedAmount, interestRate);
+        
         LoanApplication application = loanRepository.findById(loanId)
                 .orElseThrow(() -> new ResourceNotFoundException("Loan application not found"));
 
@@ -212,10 +229,20 @@ public class LoanService {
         application.setLoanStatus(targetStatus);
         application.setUpdatedBy(currentUserEmail);
 
+        // Apply overrides if provided
+        if (approvedAmount != null) {
+            application.setApprovedAmount(approvedAmount);
+        }
+        if (interestRate != null) {
+            application.setInterestRate(interestRate);
+        }
+
         // Append timestamp markers
         if (targetStatus == LoanStatus.APPROVED) {
             application.setApprovedAt(LocalDateTime.now());
-            application.setApprovedAmount(application.getLoanAmount());
+            if (application.getApprovedAmount() == null) {
+                application.setApprovedAmount(application.getLoanAmount());
+            }
         } else if (targetStatus == LoanStatus.DISBURSED) {
             application.setDisbursedAt(LocalDateTime.now());
         }

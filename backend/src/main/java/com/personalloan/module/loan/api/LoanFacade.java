@@ -55,4 +55,16 @@ public interface LoanFacade {
      * @return the updated application details DTO
      */
     LoanApplicationResponse updateApplicationStatus(Long loanId, LoanStatus targetStatus, Long actorUserId, String currentUserEmail);
+
+    /**
+     * Updates/transitions status, allowing overriding loan amounts and interest rates.
+     */
+    LoanApplicationResponse updateApplicationStatus(
+            Long loanId,
+            LoanStatus targetStatus,
+            BigDecimal approvedAmount,
+            BigDecimal interestRate,
+            Long actorUserId,
+            String currentUserEmail
+    );
 }
