@@ -7,8 +7,8 @@ INSERT INTO roles (role_code, description) VALUES
 ('ADMIN', 'Administrator role for managing users, products, and reports');
 
 -- Seed Default Loan Type
-('Personal Loan', 'Unsecured personal loan for individuals', 10000.00, 5000000.00, 6, 84, 12.50, 1);
 INSERT INTO loan_type (name, description, min_amount, max_amount, min_tenure_months, max_tenure_months, base_interest_rate, is_active) VALUES
+('Personal Loan', 'Unsecured personal loan for individuals', 10000.00, 5000000.00, 6, 84, 12.50, 1);
 
 -- Seed Default Admin User
 INSERT INTO users (email, password_hash, mobile_number, status, role_id, created_by)

@@ -29,7 +29,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final CorsConfigurationSource corsConfigurationSource;
@@ -38,6 +37,21 @@ public class SecurityConfig {
     private final MdcLoggingFilter mdcLoggingFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
+
+    public SecurityConfig(
+            @org.springframework.beans.factory.annotation.Qualifier("corsConfigurationSource") CorsConfigurationSource corsConfigurationSource,
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            RateLimiterFilter rateLimiterFilter,
+            MdcLoggingFilter mdcLoggingFilter,
+            JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
+            CustomAccessDeniedHandler customAccessDeniedHandler) {
+        this.corsConfigurationSource = corsConfigurationSource;
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.rateLimiterFilter = rateLimiterFilter;
+        this.mdcLoggingFilter = mdcLoggingFilter;
+        this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
+        this.customAccessDeniedHandler = customAccessDeniedHandler;
+    }
 
     private static final String[] PUBLIC_ENDPOINTS = {
             "/api/v1/auth/register",

@@ -55,7 +55,10 @@ management:
         include: health,info
   endpoint:
     health:
-      show-details: when_authorized
+      show-details: always
+  health:
+    redis:
+      enabled: false
 
 springdoc:
   api-docs:
@@ -77,6 +80,8 @@ app:
     secret: ${JWT_SECRET:}
     access-token-expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:900000}
     refresh-token-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}
+  security:
+    encryption-key: ${ENCRYPTION_KEY:MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI=}
   file-storage:
     type: ${FILE_STORAGE_TYPE:local}
     local:

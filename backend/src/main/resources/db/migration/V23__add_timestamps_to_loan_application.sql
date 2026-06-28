@@ -1,0 +1,4 @@
+ALTER TABLE loan_application
+ADD COLUMN submitted_at TIMESTAMP NULL,
+ADD COLUMN approved_at TIMESTAMP NULL,
+ADD COLUMN disbursed_at TIMESTAMP NULL;
