@@ -37,6 +37,27 @@ public class CustomerFacadeImpl implements CustomerFacade {
                             completion.percentage(),
                             profile.getProfileStatus() == ProfileStatus.VERIFIED
                     );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<CustomerSummary> getCustomerSummaryByCustomerId(Long customerId) {
+        return customerRepository.findById(customerId)
+                .map(profile -> {
+                    ProfileCompletionResponse completion = getProfileCompletion(profile.getUserId());
+                    return new CustomerSummary(
+                            profile.getCustomerId(),
+                            profile.getUserId(),
+                            profile.getFirstName(),
+                            profile.getLastName(),
+                            profile.getEmail(),
+                            encryptionService.maskPan(profile.getPanNumber()),
+                            profile.getMonthlyIncome(),
+                            profile.getEmploymentType(),
+                            profile.getProfileStatus(),
+                            completion.percentage(),
+                            profile.getProfileStatus() == ProfileStatus.VERIFIED
+                    );
                 });
     }
 

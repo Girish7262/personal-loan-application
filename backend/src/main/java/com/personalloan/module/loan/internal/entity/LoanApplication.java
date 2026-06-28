@@ -1,6 +1,7 @@
 package com.personalloan.module.loan.internal.entity;
 
 import com.personalloan.module.loan.api.dto.LoanStatus;
+import com.personalloan.module.loan.api.dto.LoanPurpose;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -47,8 +48,9 @@ public class LoanApplication {
     @Column(name = "interest_rate", nullable = false, precision = 5, scale = 2)
     private BigDecimal interestRate;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "purpose", nullable = false, length = 500)
-    private String purpose;
+    private LoanPurpose purpose;
 
     @Column(name = "monthly_income", nullable = false, precision = 15, scale = 2)
     private BigDecimal monthlyIncome;
@@ -68,6 +70,15 @@ public class LoanApplication {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "submitted_at")
+    private LocalDateTime submittedAt;
+
+    @Column(name = "approved_at")
+    private LocalDateTime approvedAt;
+
+    @Column(name = "disbursed_at")
+    private LocalDateTime disbursedAt;
 
     @Column(name = "created_by", length = 100)
     private String createdBy;

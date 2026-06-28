@@ -15,6 +15,14 @@ public interface CustomerFacade {
     Optional<CustomerSummary> getCustomerSummary(Long userId);
 
     /**
+     * Retrieves the profile summary details for a specific customer ID.
+     *
+     * @param customerId the customer ID to check
+     * @return an Optional containing the CustomerSummary if found, empty otherwise
+     */
+    Optional<CustomerSummary> getCustomerSummaryByCustomerId(Long customerId);
+
+    /**
      * Retrieves the profile associated with a user ID, falling back to a shell response with INCOMPLETE status if none exists.
      *
      * @param userId the user ID
