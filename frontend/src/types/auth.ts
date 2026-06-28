@@ -6,6 +6,7 @@ export interface LoginCredentials {
 export interface RegisterCredentials {
   email: string;
   password?: string;
+  mobileNumber?: string;
 }
 
 export interface UserDTO {

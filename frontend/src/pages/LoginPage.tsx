@@ -1,146 +1,163 @@
 import React, { useState } from 'react';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import {
-  Container,
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Link,
-  Card,
-  CardContent,
-  IconButton,
-  InputAdornment,
-  Alert,
-} from '@mui/material';
-import { Visibility, VisibilityOff, LockOutlined } from '@mui/icons-material';
+import { Box, Typography, Button, TextField, InputAdornment, IconButton, Link, Alert, CircularProgress } from '@mui/material';
+import { Visibility, VisibilityOff, LockOutlined, EmailOutlined } from '@mui/icons-material';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { authApi } from '@/api/authApi';
+import GlassCard from '@/components/ui/GlassCard';
 
-function LoginPage() {
+const loginSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+type LoginFormInputs = z.infer<typeof loginSchema>;
+
+const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleTogglePassword = () => setShowPassword(!showPassword);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormInputs>({
+    resolver: zodResolver(loginSchema),
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-
-    if (!email || !password) {
-      setError('Please fill in all fields');
-      return;
-    }
-
-    // Mock Login trigger
-    if (email === 'customer@gmail.com' && password === 'Password@123') {
-      setSuccess('Login successful!');
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 1000);
-    } else {
-      setError('Invalid email or password');
+  const onSubmit = async (data: LoginFormInputs) => {
+    setIsLoading(true);
+    setErrorMsg(null);
+    try {
+      const response = await authApi.login({
+        email: data.email,
+        password: data.password,
+      });
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+      navigate('/dashboard');
+    } catch (err: any) {
+      setErrorMsg(err?.response?.data?.message || 'Login failed. Invalid email or password.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Card sx={{
-          width: '100%',
-          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
-          backdropFilter: 'blur(8.5px)',
-          borderRadius: 3,
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          background: 'rgba(25, 25, 25, 0.85)'
-        }}>
-          <CardContent sx={{ p: 4 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
-              <Box sx={{
-                p: 1.5,
-                borderRadius: '50%',
-                bgcolor: 'primary.main',
-                color: 'white',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mb: 1
-              }}>
-                <LockOutlined />
-              </Box>
-              <Typography component="h1" variant="h5" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
-                Sign In
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
-                Personal Loan Application Portal
-              </Typography>
+    <Box
+      sx={{
+        background: 'radial-gradient(circle at 10% 20%, rgba(11, 34, 64, 1) 0%, rgba(15, 45, 80, 1) 90.1%)',
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        p: 2,
+      }}
+    >
+      <GlassCard sx={{ width: '100%', maxWidth: 450, p: 4, textAlign: 'center', borderRadius: 5 }}>
+        {/* Banking Brand Header */}
+        <Box sx={{ mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Box
+            sx={{
+              display: 'inline-flex',
+              p: 1.5,
+              borderRadius: 3,
+              backgroundColor: 'rgba(197, 168, 128, 0.1)',
+              color: 'secondary.main',
+              mb: 2,
+            }}
+          >
+            <LockOutlined sx={{ fontSize: 32 }} />
+          </Box>
+          <Typography variant="h3" color="primary" sx={{ fontWeight: 800 }}>
+            Sign In
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Access your secure Personal Loan digital account portal
+          </Typography>
+        </Box>
+
+        {errorMsg && (
+          <Alert severity="error" sx={{ mb: 3, textAlign: 'left', borderRadius: 3 }}>
+            {errorMsg}
+          </Alert>
+        )}
+
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <TextField
+              label="Email Address"
+              variant="outlined"
+              fullWidth
+              {...register('email')}
+              error={!!errors.email}
+              helperText={errors.email?.message}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <EmailOutlined color="action" />
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            <TextField
+              label="Password"
+              type={showPassword ? 'text' : 'password'}
+              variant="outlined"
+              fullWidth
+              {...register('password')}
+              error={!!errors.password}
+              helperText={errors.password?.message}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockOutlined color="action" />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            <Box sx={{ textAlign: 'right' }}>
+              <Link component={RouterLink} to="/forgot-password" variant="body2" color="primary" sx={{ fontWeight: 600 }}>
+                Forgot password?
+              </Link>
             </Box>
 
-            {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-            {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              size="large"
+              disabled={isLoading}
+              sx={{ py: 1.5, mt: 1 }}
+            >
+              {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Secure Sign In'}
+            </Button>
 
-            <Box component="form" onSubmit={handleSubmit} noValidate>
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                id="email"
-                label="Email Address"
-                name="email"
-                autoComplete="email"
-                autoFocus
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                sx={{ mb: 2 }}
-              />
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                name="password"
-                label="Password"
-                type={showPassword ? 'text' : 'password'}
-                id="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton onClick={handleTogglePassword} edge="end">
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ mb: 3 }}
-              />
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                size="large"
-                sx={{ py: 1.5, fontWeight: 'bold', mb: 2 }}
-              >
-                Sign In
-              </Button>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                <Link component={RouterLink} to="/forgot-password" variant="body2">
-                  Forgot password?
-                </Link>
-                <Link component={RouterLink} to="/register" variant="body2">
-                  Don't have an account? Sign Up
-                </Link>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
-      </Box>
-    </Container>
+            <Typography variant="body2" color="text.secondary">
+              Don't have an account?{' '}
+              <Link component={RouterLink} to="/register" color="primary" sx={{ fontWeight: 600 }}>
+                Register here
+              </Link>
+            </Typography>
+          </Box>
+        </form>
+      </GlassCard>
+    </Box>
   );
-}
+};
 
 export default LoginPage;
