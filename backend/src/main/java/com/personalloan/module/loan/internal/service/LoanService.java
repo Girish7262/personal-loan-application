@@ -5,19 +5,22 @@ import com.personalloan.common.exception.ResourceNotFoundException;
 import com.personalloan.module.customer.api.CustomerFacade;
 import com.personalloan.module.customer.api.dto.CustomerSummary;
 import com.personalloan.module.loan.api.dto.*;
+import com.personalloan.module.loan.event.LoanStatusChangedEvent;
 import com.personalloan.module.loan.internal.entity.LoanApplication;
 import com.personalloan.module.loan.internal.entity.LoanType;
 import com.personalloan.module.loan.internal.repository.LoanRepository;
 import com.personalloan.module.loan.internal.repository.LoanTypeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,25 +34,46 @@ public class LoanService {
     private final EmiCalculationService emiCalculationService;
     private final LoanValidationService loanValidationService;
     private final LoanEligibilityService loanEligibilityService;
+    private final LoanStatusTransitionService loanStatusTransitionService;
+    private final ApplicationEventPublisher eventPublisher;
+
+    /**
+     * Pre-evaluates the eligibility for a proposed loan application.
+     */
+    @Transactional(readOnly = true)
+    public EligibilityResult checkEligibility(Long userId, LoanApplicationRequest request) {
+        CustomerSummary customer = customerFacade.getCustomerSummary(userId)
+                .orElseThrow(() -> new BusinessException("Customer profile not found. Complete profile creation first."));
+
+        LoanType loanType = loanTypeRepository.findById(request.getLoanTypeId())
+                .orElseThrow(() -> new ResourceNotFoundException("Requested loan type configuration not found"));
+
+        BigDecimal proposedEmi = emiCalculationService.calculateEmi(
+                request.getLoanAmount(),
+                loanType.getBaseInterestRate(),
+                request.getLoanTenureMonths()
+        );
+
+        return loanEligibilityService.evaluateEligibility(
+                customer.customerId(),
+                request.getMonthlyIncome(),
+                request.getExistingEmis(),
+                proposedEmi,
+                loanType
+        );
+    }
 
     /**
      * Submits a new loan application. Calculates EMI, performs eligibility checks,
-     * seeds initial status as SUBMITTED, and generates a unique application number.
-     *
-     * @param userId the user ID owning the application
-     * @param request the application request parameters
-     * @param currentUserEmail the active user's email
-     * @return the saved application response details
+     * seeds initial status as SUBMITTED, and generates a database-safe sequential loan number.
      */
     @Transactional
     public LoanApplicationResponse submitApplication(Long userId, LoanApplicationRequest request, String currentUserEmail) {
         log.info("Submitting loan application for user ID: {}", userId);
 
-        // 1. Resolve CustomerProfile ID via CustomerFacade
         CustomerSummary customer = customerFacade.getCustomerSummary(userId)
                 .orElseThrow(() -> new BusinessException("Customer profile not found. Complete profile creation first."));
 
-        // 2. Resolve Loan Configuration Type
         LoanType loanType = loanTypeRepository.findById(request.getLoanTypeId())
                 .orElseThrow(() -> new ResourceNotFoundException("Requested loan type configuration not found"));
 
@@ -57,26 +81,34 @@ public class LoanService {
             throw new BusinessException("Requested loan type is currently inactive");
         }
 
-        // 3. Validate product bounds (amount and tenure)
+        // 1. Validate limits
         loanValidationService.validateApplicationLimits(loanType, request.getLoanAmount(), request.getLoanTenureMonths());
 
-        // 4. Calculate proposed monthly EMI
+        // 2. Compute EMI
         BigDecimal baseEmi = emiCalculationService.calculateEmi(
                 request.getLoanAmount(),
                 loanType.getBaseInterestRate(),
                 request.getLoanTenureMonths()
         );
 
-        // 5. Assert customer eligibility (Profile status, FOIR, active loan checks)
-        loanEligibilityService.checkEligibility(
+        // 3. Evaluate eligibility
+        EligibilityResult eligibility = loanEligibilityService.evaluateEligibility(
                 customer.customerId(),
                 request.getMonthlyIncome(),
                 request.getExistingEmis(),
-                baseEmi
+                baseEmi,
+                loanType
         );
 
-        // 6. Assemble LoanApplication entity
-        String appNum = "LN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        if (!eligibility.eligible()) {
+            String firstReason = eligibility.reasons().isEmpty() ? "Eligibility validation failed" : eligibility.reasons().get(0);
+            throw new BusinessException(firstReason);
+        }
+
+        // 4. Generate sequential application number PL-YYYY-00000001
+        String appNum = generateNextApplicationNumber();
+
+        // 5. Build entity
         LoanApplication application = LoanApplication.builder()
                 .customerId(customer.customerId())
                 .loanType(loanType)
@@ -84,7 +116,7 @@ public class LoanService {
                 .loanStatus(LoanStatus.SUBMITTED)
                 .loanAmount(request.getLoanAmount())
                 .loanTenureMonths(request.getLoanTenureMonths())
-                .interestRate(loanType.getBaseInterestRate()) // Preserve base interest rate from configs
+                .interestRate(loanType.getBaseInterestRate())
                 .purpose(request.getPurpose())
                 .monthlyIncome(request.getMonthlyIncome())
                 .existingEmis(request.getExistingEmis())
@@ -95,9 +127,41 @@ public class LoanService {
                 .build();
 
         LoanApplication saved = loanRepository.save(application);
-        log.info("Loan application successfully submitted. Loan ID: {}, App Number: {}", saved.getLoanId(), appNum);
 
+        // 6. Trigger domain event to log status history (from null -> SUBMITTED)
+        eventPublisher.publishEvent(new LoanStatusChangedEvent(
+                this,
+                saved.getLoanId(),
+                null,
+                LoanStatus.SUBMITTED,
+                userId,
+                "Loan application submitted"
+        ));
+
+        log.info("Loan application submitted successfully. Loan ID: {}, App Number: {}", saved.getLoanId(), appNum);
         return mapToResponse(saved);
+    }
+
+    /**
+     * Generates a sequential loan number database-safely.
+     */
+    private synchronized String generateNextApplicationNumber() {
+        int year = LocalDate.now().getYear();
+        String prefix = "PL-" + year + "-";
+        Optional<LoanApplication> lastApp = loanRepository
+                .findFirstByApplicationNumberStartingWithOrderByApplicationNumberDesc(prefix);
+
+        int suffixNum = 1;
+        if (lastApp.isPresent()) {
+            String lastNum = lastApp.get().getApplicationNumber();
+            try {
+                String suffixPart = lastNum.substring(prefix.length());
+                suffixNum = Integer.parseInt(suffixPart) + 1;
+            } catch (Exception e) {
+                log.warn("Failed to parse sequential suffix from loan number: {}. Suffix reset to 1", lastNum, e);
+            }
+        }
+        return String.format("%s%08d", prefix, suffixNum);
     }
 
     /**
@@ -135,13 +199,15 @@ public class LoanService {
      * Updates/transitions status. Logs specific timestamps for events (approvedAt, disbursedAt).
      */
     @Transactional
-    public LoanApplicationResponse updateApplicationStatus(Long loanId, LoanStatus targetStatus, String currentUserEmail) {
+    public LoanApplicationResponse updateApplicationStatus(Long loanId, LoanStatus targetStatus, Long actorUserId, String currentUserEmail) {
         log.info("Transitioning loan status for loan ID: {} to {}", loanId, targetStatus);
         LoanApplication application = loanRepository.findById(loanId)
                 .orElseThrow(() -> new ResourceNotFoundException("Loan application not found"));
 
-        // Validate status transition
-        loanValidationService.validateStatusTransition(application.getLoanStatus(), targetStatus);
+        LoanStatus oldStatus = application.getLoanStatus();
+
+        // Validate status transition via the transition state machine service
+        loanStatusTransitionService.validateTransition(oldStatus, targetStatus);
 
         application.setLoanStatus(targetStatus);
         application.setUpdatedBy(currentUserEmail);
@@ -149,12 +215,23 @@ public class LoanService {
         // Append timestamp markers
         if (targetStatus == LoanStatus.APPROVED) {
             application.setApprovedAt(LocalDateTime.now());
-            application.setApprovedAmount(application.getLoanAmount()); // Default approved amount to applied amount
+            application.setApprovedAmount(application.getLoanAmount());
         } else if (targetStatus == LoanStatus.DISBURSED) {
             application.setDisbursedAt(LocalDateTime.now());
         }
 
         LoanApplication saved = loanRepository.save(application);
+
+        // Trigger domain event for status logging
+        eventPublisher.publishEvent(new LoanStatusChangedEvent(
+                this,
+                saved.getLoanId(),
+                oldStatus,
+                targetStatus,
+                actorUserId,
+                "Status transitioned from " + oldStatus + " to " + targetStatus
+        ));
+
         return mapToResponse(saved);
     }
 
@@ -168,6 +245,7 @@ public class LoanService {
                 .minTenureMonths(app.getLoanType().getMinTenureMonths())
                 .maxTenureMonths(app.getLoanType().getMaxTenureMonths())
                 .baseInterestRate(app.getLoanType().getBaseInterestRate())
+                .foirPercentage(app.getLoanType().getFoirPercentage())
                 .isActive(app.getLoanType().getIsActive())
                 .build();
 

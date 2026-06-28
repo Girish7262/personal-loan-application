@@ -4,15 +4,21 @@ import com.personalloan.common.exception.BusinessException;
 import com.personalloan.module.customer.api.CustomerFacade;
 import com.personalloan.module.customer.api.dto.CustomerSummary;
 import com.personalloan.module.customer.api.dto.ProfileStatus;
+import com.personalloan.module.loan.api.dto.EligibilityResult;
 import com.personalloan.module.loan.api.dto.LoanStatus;
 import com.personalloan.module.loan.internal.entity.LoanApplication;
+import com.personalloan.module.loan.internal.entity.LoanType;
 import com.personalloan.module.loan.internal.repository.LoanRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,27 +28,35 @@ public class LoanEligibilityService {
     private final CustomerFacade customerFacade;
     private final LoanRepository loanRepository;
 
+    private static final MathContext MC = new MathContext(16, RoundingMode.HALF_UP);
+
     /**
-     * Asserts customer eligibility rules: ProfileStatus checks, One Active Loan constraints, and FOIR (50% threshold).
-     *
-     * @param customerId the customer ID (profile ID)
-     * @param monthlyIncome the monthly income claimed in request
-     * @param existingEmis the existing monthly obligations
-     * @param proposedEmi the computed proposed EMI of the loan
+     * Evaluates all eligibility criteria dynamically and returns a structured EligibilityResult.
+     * Asserts customer profile completeness, FOIR thresholds, and active loan constraints.
      */
-    public void checkEligibility(Long customerId, BigDecimal monthlyIncome, BigDecimal existingEmis, BigDecimal proposedEmi) {
-        log.info("Verifying eligibility metrics for customer ID: {}", customerId);
+    public EligibilityResult evaluateEligibility(Long customerId, BigDecimal monthlyIncome, BigDecimal existingEmis, BigDecimal proposedEmi, LoanType loanType) {
+        log.info("Evaluating dynamic eligibility metrics for customer ID: {}", customerId);
 
-        // 1. Fetch Customer Summary via CustomerFacade
-        CustomerSummary customer = customerFacade.getCustomerSummaryByCustomerId(customerId)
-                .orElseThrow(() -> new BusinessException("Customer profile not found. Complete profile creation first."));
+        List<String> reasons = new ArrayList<>();
+        BigDecimal foirPercentageCalculated = BigDecimal.ZERO;
+        BigDecimal maxEligibleAmount = BigDecimal.ZERO;
 
-        // Assert profile status is COMPLETE or VERIFIED
-        if (customer.profileStatus() != ProfileStatus.COMPLETE && customer.profileStatus() != ProfileStatus.VERIFIED) {
-            throw new BusinessException("Customer profile is incomplete. Profile status must be COMPLETE or VERIFIED to apply for a loan.");
+        BigDecimal income = monthlyIncome == null ? BigDecimal.ZERO : monthlyIncome;
+        BigDecimal existingObligations = existingEmis == null ? BigDecimal.ZERO : existingEmis;
+        BigDecimal newEmi = proposedEmi == null ? BigDecimal.ZERO : proposedEmi;
+
+        // 1. Resolve and check Customer Profile
+        Optional<CustomerSummary> customerOpt = customerFacade.getCustomerSummaryByCustomerId(customerId);
+        if (customerOpt.isEmpty()) {
+            reasons.add("Customer profile not found. Complete onboarding first.");
+        } else {
+            CustomerSummary customer = customerOpt.get();
+            if (customer.profileStatus() != ProfileStatus.COMPLETE && customer.profileStatus() != ProfileStatus.VERIFIED) {
+                reasons.add("Customer profile status must be COMPLETE or VERIFIED. Current status: " + customer.profileStatus());
+            }
         }
 
-        // 2. Validate "One Active Loan Rule"
+        // 2. Resolve and check active loan limitations (One Active Loan Rule)
         List<LoanApplication> customerApplications = loanRepository.findByCustomerId(customerId);
         boolean hasActiveLoan = customerApplications.stream()
                 .anyMatch(app -> app.getLoanStatus() == LoanStatus.SUBMITTED ||
@@ -53,25 +67,67 @@ public class LoanEligibilityService {
                                  app.getLoanStatus() == LoanStatus.DISBURSED);
 
         if (hasActiveLoan) {
-            throw new BusinessException("Customer already has an active loan application. Only one active loan is allowed.");
+            reasons.add("Customer already has an active loan application. Only one active loan is allowed.");
         }
 
-        // 3. Verify FOIR (Fixed Obligation to Income Ratio) <= 50%
-        BigDecimal proposedObligation = proposedEmi == null ? BigDecimal.ZERO : proposedEmi;
-        BigDecimal existingObligation = existingEmis == null ? BigDecimal.ZERO : existingEmis;
-        BigDecimal totalObligation = proposedObligation.add(existingObligation);
+        // 3. Verify FOIR calculations
+        BigDecimal foirThreshold = loanType.getFoirPercentage() != null ? loanType.getFoirPercentage() : BigDecimal.valueOf(50.00);
+        BigDecimal totalObligations = existingObligations.add(newEmi);
 
-        BigDecimal income = monthlyIncome == null ? BigDecimal.ZERO : monthlyIncome;
-        if (income.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new BusinessException("Monthly income must be greater than zero");
+        if (income.compareTo(BigDecimal.ZERO) > 0) {
+            foirPercentageCalculated = totalObligations
+                    .multiply(BigDecimal.valueOf(100))
+                    .divide(income, 2, RoundingMode.HALF_UP);
+
+            if (foirPercentageCalculated.compareTo(foirThreshold) > 0) {
+                reasons.add(String.format("Proposed obligations exceed configured FOIR threshold of %s%%. Calculated FOIR: %s%%",
+                        foirThreshold, foirPercentageCalculated));
+            }
+        } else {
+            reasons.add("Monthly income must be greater than zero.");
         }
 
-        BigDecimal foirLimit = income.multiply(BigDecimal.valueOf(0.50));
-        if (totalObligation.compareTo(foirLimit) > 0) {
-            throw new BusinessException(String.format("Proposed EMI (%s) and existing obligations (%s) exceed the 50%% FOIR threshold of monthly income (%s)",
-                    proposedObligation, existingObligation, foirLimit));
+        // 4. Calculate Maximum Eligible Loan Amount based on remaining available FOIR budget
+        if (income.compareTo(BigDecimal.ZERO) > 0 && foirThreshold.compareTo(BigDecimal.ZERO) > 0) {
+            // maxEmiBudget = income * (foirThreshold / 100)
+            BigDecimal maxEmiBudget = income.multiply(foirThreshold).divide(BigDecimal.valueOf(100), MC);
+            // maxNewEmi = maxEmiBudget - existingObligations
+            BigDecimal maxNewEmi = maxEmiBudget.subtract(existingObligations);
+
+            if (maxNewEmi.compareTo(BigDecimal.ZERO) > 0) {
+                // Reverse amortization formula to calculate max principal:
+                // P = [EMI * ((1+R)^N - 1)] / [R * (1+R)^N]
+                BigDecimal annualRate = loanType.getBaseInterestRate();
+                int tenureMonths = loanType.getMaxTenureMonths(); // Calculate limits using maximum tenure
+
+                if (annualRate.compareTo(BigDecimal.ZERO) > 0 && tenureMonths > 0) {
+                    BigDecimal r = annualRate.divide(BigDecimal.valueOf(1200), 10, RoundingMode.HALF_UP);
+                    BigDecimal onePlusR = BigDecimal.ONE.add(r);
+                    BigDecimal onePlusRPowN = onePlusR.pow(tenureMonths, MC);
+
+                    BigDecimal numerator = maxNewEmi.multiply(onePlusRPowN.subtract(BigDecimal.ONE), MC);
+                    BigDecimal denominator = r.multiply(onePlusRPowN, MC);
+
+                    if (denominator.compareTo(BigDecimal.ZERO) > 0) {
+                        maxEligibleAmount = numerator.divide(denominator, 2, RoundingMode.HALF_UP);
+                        // Cap maximum eligible amount to loan type limits
+                        if (maxEligibleAmount.compareTo(loanType.getMaxAmount()) > 0) {
+                            maxEligibleAmount = loanType.getMaxAmount();
+                        }
+                    }
+                } else if (annualRate.compareTo(BigDecimal.ZERO) == 0 && tenureMonths > 0) {
+                    // No interest flat reverse rate
+                    maxEligibleAmount = maxNewEmi.multiply(BigDecimal.valueOf(tenureMonths));
+                    if (maxEligibleAmount.compareTo(loanType.getMaxAmount()) > 0) {
+                        maxEligibleAmount = loanType.getMaxAmount();
+                    }
+                }
+            }
         }
 
-        log.info("Eligibility check passed for customer ID: {}", customerId);
+        boolean eligible = reasons.isEmpty();
+        log.info("Eligibility evaluation completed. Eligible: {}", eligible);
+
+        return new EligibilityResult(eligible, reasons, maxEligibleAmount, foirPercentageCalculated);
     }
 }

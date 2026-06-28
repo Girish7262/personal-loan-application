@@ -41,6 +41,9 @@ public class LoanType {
     @Column(name = "base_interest_rate", nullable = false, precision = 5, scale = 2)
     private BigDecimal baseInterestRate;
 
+    @Column(name = "foir_percentage", nullable = false, precision = 5, scale = 2)
+    private BigDecimal foirPercentage;
+
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 

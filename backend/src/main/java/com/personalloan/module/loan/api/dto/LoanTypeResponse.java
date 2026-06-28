@@ -20,5 +20,6 @@ public class LoanTypeResponse {
     private Integer minTenureMonths;
     private Integer maxTenureMonths;
     private BigDecimal baseInterestRate;
+    private BigDecimal foirPercentage;
     private Boolean isActive;
 }

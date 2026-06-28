@@ -1,0 +1,1 @@
+ALTER TABLE loan_type ADD COLUMN foir_percentage DECIMAL(5, 2) NOT NULL DEFAULT 50.00;

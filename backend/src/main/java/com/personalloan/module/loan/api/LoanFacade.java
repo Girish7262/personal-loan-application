@@ -1,5 +1,6 @@
 package com.personalloan.module.loan.api;
 
+import com.personalloan.module.loan.api.dto.EligibilityResult;
 import com.personalloan.module.loan.api.dto.LoanApplicationRequest;
 import com.personalloan.module.loan.api.dto.LoanApplicationResponse;
 import com.personalloan.module.loan.api.dto.LoanStatus;
@@ -7,6 +8,15 @@ import com.personalloan.module.loan.api.dto.LoanStatus;
 import java.util.List;
 
 public interface LoanFacade {
+
+    /**
+     * Pre-evaluates the eligibility details for a proposed loan request.
+     *
+     * @param userId the user ID checking
+     * @param request the proposed application request params
+     * @return the structured EligibilityResult DTO
+     */
+    EligibilityResult checkEligibility(Long userId, LoanApplicationRequest request);
 
     /**
      * Submits a new loan application. Calculates EMI, validates eligibility, and saves to database.
@@ -40,8 +50,9 @@ public interface LoanFacade {
      *
      * @param loanId the loan application database ID
      * @param targetStatus the desired workflow status
+     * @param actorUserId the active user ID performing the transition
      * @param currentUserEmail the active actor email
      * @return the updated application details DTO
      */
-    LoanApplicationResponse updateApplicationStatus(Long loanId, LoanStatus targetStatus, String currentUserEmail);
+    LoanApplicationResponse updateApplicationStatus(Long loanId, LoanStatus targetStatus, Long actorUserId, String currentUserEmail);
 }

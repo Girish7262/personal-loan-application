@@ -1,6 +1,7 @@
 package com.personalloan.module.loan.internal.service;
 
 import com.personalloan.module.loan.api.LoanFacade;
+import com.personalloan.module.loan.api.dto.EligibilityResult;
 import com.personalloan.module.loan.api.dto.LoanApplicationRequest;
 import com.personalloan.module.loan.api.dto.LoanApplicationResponse;
 import com.personalloan.module.loan.api.dto.LoanStatus;
@@ -15,6 +16,12 @@ import java.util.List;
 public class LoanFacadeImpl implements LoanFacade {
 
     private final LoanService loanService;
+
+    @Override
+    @Transactional(readOnly = true)
+    public EligibilityResult checkEligibility(Long userId, LoanApplicationRequest request) {
+        return loanService.checkEligibility(userId, request);
+    }
 
     @Override
     @Transactional
@@ -36,7 +43,7 @@ public class LoanFacadeImpl implements LoanFacade {
 
     @Override
     @Transactional
-    public LoanApplicationResponse updateApplicationStatus(Long loanId, LoanStatus targetStatus, String currentUserEmail) {
-        return loanService.updateApplicationStatus(loanId, targetStatus, currentUserEmail);
+    public LoanApplicationResponse updateApplicationStatus(Long loanId, LoanStatus targetStatus, Long actorUserId, String currentUserEmail) {
+        return loanService.updateApplicationStatus(loanId, targetStatus, actorUserId, currentUserEmail);
     }
 }

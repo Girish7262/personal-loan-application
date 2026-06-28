@@ -25,4 +25,9 @@ public interface LoanRepository extends JpaRepository<LoanApplication, Long> {
      * @return an Optional containing the LoanApplication if found
      */
     Optional<LoanApplication> findByApplicationNumber(String applicationNumber);
+
+    /**
+     * Finds the maximum sequential application number for the current prefix to support sequence incrementation.
+     */
+    Optional<LoanApplication> findFirstByApplicationNumberStartingWithOrderByApplicationNumberDesc(String prefix);
 }
