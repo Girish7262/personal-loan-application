@@ -5,6 +5,7 @@ import com.personalloan.module.loan.api.dto.LoanApplicationRequest;
 import com.personalloan.module.loan.api.dto.LoanApplicationResponse;
 import com.personalloan.module.loan.api.dto.LoanStatus;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface LoanFacade {

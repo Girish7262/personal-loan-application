@@ -37,6 +37,7 @@ public class CustomerFacadeImpl implements CustomerFacade {
                             completion.percentage(),
                             profile.getProfileStatus() == ProfileStatus.VERIFIED
                     );
+                });
     }
 
     @Override

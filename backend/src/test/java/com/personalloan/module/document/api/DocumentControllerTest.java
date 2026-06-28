@@ -108,8 +108,7 @@ class DocumentControllerTest {
 
         // Act & Assert
         mockMvc.perform(get("/api/v1/documents/loan/1")
-                        .with(user(testPrincipal)
-                        .username("girish@gmail.com")))
+                        .with(user(testPrincipal)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data[0].documentId").value(10));

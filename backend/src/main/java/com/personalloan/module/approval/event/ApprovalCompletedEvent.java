@@ -15,7 +15,7 @@ public class ApprovalCompletedEvent extends ApplicationEvent {
     private final String remarks;
     private final BigDecimal approvedAmount;
     private final BigDecimal interestRate;
-    private final LocalDateTime timestamp;
+    private final LocalDateTime actionTimestamp;
 
     public ApprovalCompletedEvent(
             Object source,
@@ -32,6 +32,6 @@ public class ApprovalCompletedEvent extends ApplicationEvent {
         this.remarks = remarks;
         this.approvedAmount = approvedAmount;
         this.interestRate = interestRate;
-        this.timestamp = LocalDateTime.now();
+        this.actionTimestamp = LocalDateTime.now();
     }
 }
