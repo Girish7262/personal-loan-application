@@ -1,0 +1,23 @@
+CREATE TABLE users (
+    user_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    mobile_number VARCHAR(15) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'INACTIVE',
+    role_id BIGINT NOT NULL,
+    failed_login_attempts INT NOT NULL DEFAULT 0,
+    lockout_until TIMESTAMP NULL,
+    email_verification_token VARCHAR(255) NULL,
+    password_reset_token VARCHAR(255) NULL,
+    reset_token_expiry TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_by VARCHAR(100) NULL,
+    updated_by VARCHAR(100) NULL,
+    is_deleted TINYINT(1) NOT NULL DEFAULT 0,
+    CONSTRAINT uk_users_email UNIQUE (email),
+    CONSTRAINT uk_users_mobile_number UNIQUE (mobile_number),
+    CONSTRAINT fk_users_roles FOREIGN KEY (role_id) REFERENCES roles(role_id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    INDEX idx_users_email (email),
+    INDEX idx_users_mobile_number (mobile_number)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

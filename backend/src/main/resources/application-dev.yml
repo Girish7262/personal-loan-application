@@ -1,0 +1,11 @@
+app:
+  jwt:
+    secret: dGVzdC1zZWNyZXQta2V5LXdoaWNoLWlzLWF0LWxlYXN0LTI1Ni1iaXRzLWZvci1zZWN1cml0eS1hYmNkZWZnaGlqa2x=
+    access-token-expiration-ms: 900000 # 15 minutes
+    refresh-token-expiration-ms: 604800000 # 7 days
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

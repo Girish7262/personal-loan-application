@@ -1,0 +1,48 @@
+# Compiled / build
+target/
+dist/
+build/
+*.class
+*.jar
+*.war
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Node
+node_modules/
+
+# Storage
+storage/
+
+# Test / coverage
+coverage/
+.jacoco/
+
+# Maven
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+
+# Frontend
+frontend/dist/
+
+# Docker
+*.pid
