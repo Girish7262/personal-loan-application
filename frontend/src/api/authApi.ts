@@ -3,17 +3,17 @@ import { LoginCredentials, RegisterCredentials, AuthResponse } from '@/types/aut
 
 export const authApi = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    const response = await axiosClient.post('/api/v1/auth/login', credentials);
+    const response = await axiosClient.post('/api/auth/login', credentials);
     return response.data;
   },
 
   register: async (credentials: RegisterCredentials): Promise<AuthResponse> => {
-    const response = await axiosClient.post('/api/v1/auth/register', credentials);
+    const response = await axiosClient.post('/api/auth/register', credentials);
     return response.data;
   },
 
   forgotPassword: async (email: string): Promise<{ message: string }> => {
-    const response = await axiosClient.post('/api/v1/auth/forgot-password', { email });
+    const response = await axiosClient.post('/api/auth/forgot-password', { email });
     return response.data;
   },
 };

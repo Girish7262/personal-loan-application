@@ -21,7 +21,7 @@ describe('authApi client mapping', () => {
     const result = await authApi.login({ email: 'girish@gmail.com', password: 'Password@123' });
 
     // Assert
-    expect(axiosClient.post).toHaveBeenCalledWith('/api/v1/auth/login', {
+    expect(axiosClient.post).toHaveBeenCalledWith('/api/auth/login', {
       email: 'girish@gmail.com',
       password: 'Password@123',
     });
