@@ -29,6 +29,9 @@ public class Document {
     @Column(name = "file_path", nullable = false, length = 512)
     private String filePath; // Physical path or S3 key
 
+    @Column(name = "file_hash", nullable = false, length = 64)
+    private String fileHash;
+
     @Column(name = "file_type", nullable = false, length = 100)
     private String fileType; // Content type, e.g. application/pdf
 

@@ -20,4 +20,9 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
      * Finds a specific document type for a loan application that is not deleted.
      */
     Optional<Document> findByLoanIdAndDocumentTypeAndIsDeletedFalse(Long loanId, DocumentType documentType);
+
+    /**
+     * Finds an active document by its file SHA-256 hash to prevent duplicate uploads.
+     */
+    Optional<Document> findByFileHashAndIsDeletedFalse(String fileHash);
 }

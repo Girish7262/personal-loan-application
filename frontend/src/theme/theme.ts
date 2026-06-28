@@ -1,6 +1,6 @@
 import { createTheme } from '@mui/material/styles';
 
-const theme = createTheme({
+export const lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
@@ -49,34 +49,57 @@ const theme = createTheme({
   shape: {
     borderRadius: 8,
   },
-  components: {
-    MuiButton: {
-      defaultProps: {
-        disableElevation: true,
-      },
-      styleOverrides: {
-        root: {
-          borderRadius: 8,
-          padding: '8px 20px',
-        },
-      },
+});
+
+export const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#90CAF9',
+      light: '#E3F2FD',
+      dark: '#42A5F5',
+      contrastText: '#0A192F',
     },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: 12,
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
-        },
-      },
+    secondary: {
+      main: '#A5D6A7',
+      light: '#E8F5E9',
+      dark: '#66BB6A',
+      contrastText: '#0A192F',
     },
-    MuiAppBar: {
-      styleOverrides: {
-        root: {
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
-        },
-      },
+    error: {
+      main: '#F44336',
     },
+    warning: {
+      main: '#FFA726',
+    },
+    info: {
+      main: '#29B6F6',
+    },
+    success: {
+      main: '#66BB6A',
+    },
+    background: {
+      default: '#0A192F',
+      paper: '#172A45',
+    },
+    text: {
+      primary: '#F2F5F9',
+      secondary: '#8892B0',
+    },
+  },
+  typography: {
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    h1: { fontWeight: 700, fontSize: '2rem' },
+    h2: { fontWeight: 600, fontSize: '1.5rem' },
+    h3: { fontWeight: 600, fontSize: '1.25rem' },
+    h4: { fontWeight: 600, fontSize: '1.125rem' },
+    h5: { fontWeight: 500, fontSize: '1rem' },
+    h6: { fontWeight: 500, fontSize: '0.875rem' },
+    button: { textTransform: 'none', fontWeight: 600 },
+  },
+  shape: {
+    borderRadius: 8,
   },
 });
 
-export default theme;
+export default lightTheme;

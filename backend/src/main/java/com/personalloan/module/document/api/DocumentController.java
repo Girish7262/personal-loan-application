@@ -73,7 +73,7 @@ public class DocumentController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         log.info("REST request to download attachment ID: {} by user: {}", documentId, userDetails.getUsername());
-        byte[] fileData = documentFacade.downloadDocument(documentId);
+        byte[] fileData = documentFacade.downloadDocument(documentId, userDetails.getUserId());
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"document_" + documentId + "\"")

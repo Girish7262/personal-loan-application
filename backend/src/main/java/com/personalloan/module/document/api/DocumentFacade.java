@@ -15,7 +15,7 @@ public interface DocumentFacade {
     /**
      * Retrieves the file payload data bytes.
      */
-    byte[] downloadDocument(Long documentId);
+    byte[] downloadDocument(Long documentId, Long userId);
 
     /**
      * Lists all uploaded documents metadata for a loan application.

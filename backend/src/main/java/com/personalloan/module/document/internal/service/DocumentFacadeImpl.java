@@ -14,6 +14,7 @@ import java.util.List;
 public class DocumentFacadeImpl implements DocumentFacade {
 
     private final DocumentService documentService;
+    private final DocumentDownloadService documentDownloadService;
 
     @Override
     @Transactional
@@ -23,8 +24,8 @@ public class DocumentFacadeImpl implements DocumentFacade {
 
     @Override
     @Transactional(readOnly = true)
-    public byte[] downloadDocument(Long documentId) {
-        return documentService.downloadDocument(documentId);
+    public byte[] downloadDocument(Long documentId, Long userId) {
+        return documentDownloadService.downloadDocument(documentId, userId);
     }
 
     @Override

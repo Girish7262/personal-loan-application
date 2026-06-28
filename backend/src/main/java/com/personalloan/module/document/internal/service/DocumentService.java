@@ -23,6 +23,8 @@ public class DocumentService {
     private final DocumentRepository documentRepository;
     private final StorageProvider storageProvider;
     private final VirusScanner virusScanner;
+    private final FileHashService fileHashService;
+    private final DocumentValidationService documentValidationService;
 
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
@@ -30,15 +32,20 @@ public class DocumentService {
     public DocumentService(
             DocumentRepository documentRepository,
             @Qualifier("localStorageProvider") StorageProvider storageProvider,
-            VirusScanner virusScanner) {
+            VirusScanner virusScanner,
+            FileHashService fileHashService,
+            DocumentValidationService documentValidationService) {
         this.documentRepository = documentRepository;
         this.storageProvider = storageProvider;
         this.virusScanner = virusScanner;
+        this.fileHashService = fileHashService;
+        this.documentValidationService = documentValidationService;
     }
 
     /**
      * Uploads and stores a document attachment. Validates format (PDF/JPG/PNG),
-     * asserts size (<= 5MB), runs virus scanning checks, and saves database metadata.
+     * asserts size (<= 5MB), validates magic bytes, checks for content duplicates via SHA-256 hash,
+     * runs virus scanning checks, and saves database metadata.
      */
     @Transactional
     public DocumentResponse uploadDocument(Long loanId, DocumentType documentType, String fileName, String contentType, long fileSize, byte[] fileData, String currentUserEmail) {
@@ -57,17 +64,27 @@ public class DocumentService {
             throw new BusinessException("File size exceeds the maximum limit of 5MB.");
         }
 
-        // 3. Scan for viruses
+        // 3. Validate magic bytes signature integrity
+        documentValidationService.validateFileSignature(fileData, contentType);
+
+        // 4. Calculate SHA-256 hash and check duplicate uploads
+        String fileHash = fileHashService.calculateSha256(fileData);
+        documentRepository.findByFileHashAndIsDeletedFalse(fileHash).ifPresent(existingDoc -> {
+            throw new BusinessException("A document with the exact same content has already been uploaded for loan ID: " + existingDoc.getLoanId());
+        });
+
+        // 5. Scan for viruses
         virusScanner.scan(fileData, fileName);
 
-        // 4. Save file payload outside the database using the storage provider
+        // 6. Save file payload outside the database using the storage provider
         String filePath = storageProvider.store(fileData, fileName);
 
-        // 5. Build and save the metadata entity
+        // 7. Build and save the metadata entity
         Document document = Document.builder()
                 .loanId(loanId)
                 .fileName(fileName)
                 .filePath(filePath)
+                .fileHash(fileHash)
                 .fileType(contentType)
                 .fileSize(fileSize)
                 .documentType(documentType)
