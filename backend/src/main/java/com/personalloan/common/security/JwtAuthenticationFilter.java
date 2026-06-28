@@ -1,6 +1,6 @@
 package com.personalloan.common.security;
 
-import com.personalloan.module.auth.service.JwtService;
+import com.personalloan.module.auth.internal.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

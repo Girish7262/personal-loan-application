@@ -1,6 +1,6 @@
 package com.personalloan.common.security;
 
-import com.personalloan.module.auth.entity.User;
+import com.personalloan.module.auth.internal.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
