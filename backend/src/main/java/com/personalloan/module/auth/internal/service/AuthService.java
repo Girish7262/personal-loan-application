@@ -1,14 +1,15 @@
 package com.personalloan.module.auth.internal.service;
 
+import com.personalloan.common.event.AuditEvent;
 import com.personalloan.common.exception.BusinessException;
 import com.personalloan.common.exception.UnauthorizedException;
-import com.personalloan.module.admin.api.AdminFacade;
 import com.personalloan.module.auth.api.dto.AuthResponse;
 import com.personalloan.module.auth.api.dto.ChangePasswordRequest;
 import com.personalloan.module.auth.api.dto.LoginRequest;
 import com.personalloan.module.auth.api.dto.RegisterRequest;
 import com.personalloan.module.auth.internal.entity.User;
 import com.personalloan.module.auth.internal.repository.UserRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +35,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
     private final PasswordHistoryService passwordHistoryService;
-    private final AdminFacade adminFacade;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * Registers a new customer in the system. Enforces rate limits (10 requests/hour/IP),
@@ -207,6 +208,6 @@ public class AuthService {
     }
 
     private void saveAuditLog(User user, String action, String result, String ip, String userAgent) {
-        adminFacade.logAction(user != null ? user.getUserId() : null, action, result, ip, userAgent);
+        eventPublisher.publishEvent(new AuditEvent(this, user != null ? user.getUserId() : null, action, result, ip, userAgent));
     }
 }

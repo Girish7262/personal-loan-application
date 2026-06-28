@@ -2,12 +2,12 @@ package com.personalloan.module.auth.internal.service;
 
 import com.personalloan.common.exception.BusinessException;
 import com.personalloan.common.exception.UnauthorizedException;
-import com.personalloan.module.admin.api.AdminFacade;
 import com.personalloan.module.auth.api.dto.ChangePasswordRequest;
 import com.personalloan.module.auth.api.dto.RegisterRequest;
 import com.personalloan.module.auth.internal.entity.Role;
 import com.personalloan.module.auth.internal.entity.User;
 import com.personalloan.module.auth.internal.repository.UserRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,7 +36,7 @@ class AuthServiceUnitTest {
     @Mock
     private PasswordHistoryService passwordHistoryService;
     @Mock
-    private AdminFacade AdminFacade;
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private AuthService authService;
