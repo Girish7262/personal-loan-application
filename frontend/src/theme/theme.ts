@@ -4,16 +4,16 @@ export const lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#0B2240', // Deep Banking Blue
-      light: '#1B3B6F',
-      dark: '#051329',
+      main: '#0B2E59', // Deep Banking Blue
+      light: '#1E4C7A',
+      dark: '#051833',
       contrastText: '#FFFFFF',
     },
     secondary: {
-      main: '#C5A880', // Premium Gold Accent
-      light: '#DCC39F',
-      dark: '#A3845C',
-      contrastText: '#0B2240',
+      main: '#1D4ED8', // Royal Blue
+      light: '#3B82F6',
+      dark: '#1E3A8A',
+      contrastText: '#FFFFFF',
     },
     background: {
       default: '#F8FAFC',
@@ -21,28 +21,28 @@ export const lightTheme = createTheme({
     },
     text: {
       primary: '#0F172A',
-      secondary: '#64748B',
+      secondary: '#475569',
     },
     success: {
-      main: '#10B981', // Emerald green
+      main: '#16A34A',
     },
     error: {
-      main: '#EF4444', // Ruby red
+      main: '#DC2626',
     },
     warning: {
-      main: '#F59E0B', // Warm amber
+      main: '#D97706',
     },
     info: {
-      main: '#3B82F6', // Cobalt blue
+      main: '#0284C7',
     },
   },
   typography: {
-    fontFamily: '"Inter", "Poppins", "Roboto", "Helvetica", sans-serif',
-    h1: { fontWeight: 800, fontSize: '2.5rem', letterSpacing: '-0.02em', lineHeight: 1.2 },
-    h2: { fontWeight: 700, fontSize: '1.875rem', letterSpacing: '-0.01em', lineHeight: 1.3 },
-    h3: { fontWeight: 700, fontSize: '1.5rem', letterSpacing: '-0.01em', lineHeight: 1.4 },
-    h4: { fontWeight: 600, fontSize: '1.25rem', lineHeight: 1.4 },
-    h5: { fontWeight: 600, fontSize: '1.0625rem', lineHeight: 1.5 },
+    fontFamily: '"Poppins", "Inter", "Roboto", "Helvetica", sans-serif',
+    h1: { fontWeight: 800, fontSize: '2.75rem', letterSpacing: '-0.02em', lineHeight: 1.2 },
+    h2: { fontWeight: 700, fontSize: '2rem', letterSpacing: '-0.01em', lineHeight: 1.3 },
+    h3: { fontWeight: 700, fontSize: '1.625rem', letterSpacing: '-0.01em', lineHeight: 1.4 },
+    h4: { fontWeight: 600, fontSize: '1.375rem', lineHeight: 1.4 },
+    h5: { fontWeight: 600, fontSize: '1.125rem', lineHeight: 1.5 },
     h6: { fontWeight: 600, fontSize: '0.9375rem', lineHeight: 1.5 },
     body1: { fontSize: '1rem', lineHeight: 1.6 },
     body2: { fontSize: '0.875rem', lineHeight: 1.6 },
@@ -56,16 +56,16 @@ export const lightTheme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 8,
-          padding: '10px 20px',
+          padding: '10px 24px',
           boxShadow: 'none',
           transition: 'all 0.2s ease-in-out',
           '&:hover': {
-            boxShadow: '0 4px 12px rgba(11, 34, 64, 0.15)',
+            boxShadow: '0 4px 12px rgba(11, 46, 89, 0.15)',
             transform: 'translateY(-1px)',
           },
         },
         containedPrimary: {
-          background: 'linear-gradient(135deg, #0B2240 0%, #1B3B6F 100%)',
+          background: 'linear-gradient(135deg, #0B2E59 0%, #1D4ED8 100%)',
         },
       },
     },
@@ -109,7 +109,7 @@ export const darkTheme = createTheme({
     },
   },
   typography: {
-    fontFamily: '"Inter", "Poppins", "Roboto", sans-serif',
+    fontFamily: '"Poppins", "Inter", "Roboto", sans-serif',
   },
   shape: {
     borderRadius: 12,
