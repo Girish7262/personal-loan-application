@@ -1,73 +1,79 @@
-# Personal Loan Application System
+# Personal Loan Application System (Modular Monolith)
 
-Monorepo for the Personal Loan Application System — Sprint 0 project setup.
+A secure, premium personal loan onboarding and processing system built using a decoupled **Modular Monolith** architecture.
 
-## Project Structure
+---
+
+## 🚀 Technology Stack
+
+### Backend
+* **Core:** Java 17, Spring Boot 3.x, Spring Security (JWT authentication, rate limiting)
+* **Database & Migrations:** MySQL 8, Flyway DB, Spring Data JPA
+* **Cryptography:** AES-256-GCM (Aadhaar/PAN at-rest encryption), SHA-256 (File duplication hashing)
+* **Testing:** JUnit 5, Mockito, MockMvc, Testcontainers (database-locked validation checks)
+
+### Frontend
+* **Core:** React 18, TypeScript, Vite, React Router DOM (v6)
+* **UI & Theming:** Material UI (MUI), Light/Dark dual theme
+* **State & Forms:** TanStack React Query, React Hook Form, Zod
+* **Testing:** Vitest, React Testing Library, JSDOM
+
+---
+
+## 🏛️ Modular Architecture
+
+The application is structured as a **Modular Monolith** to support future microservices extraction:
+* **Strict Boundary Decoupling:** Business packages (`auth`, `customer`, `loan`, `document`, `approval`, `admin`) communicate exclusively through public interfaces (Facades) and Spring Application Events.
+* **Primitive Entity Keys:** Entities reference objects in downstream modules using database IDs (e.g. `Long customerId` instead of direct JPA `@ManyToOne` entity mapping).
 
 ```
-personal-loan-application/
-├── backend/          # Spring Boot 3.3 + Java 21
-├── frontend/         # React 18 + TypeScript + Vite
-├── docs/             # Project documentation (PDFs + architecture docs)
-└── docker-compose.yml
+e:\Loan Application
+├── .github/workflows       # CI/CD GitHub Actions pipelines
+├── backend                 # Spring Boot Backend
+│   ├── src/main/java       # Source classes partitioned by module
+│   ├── src/main/resources  # Schema migrations (db/migration/)
+│   └── pom.xml
+└── frontend                # React + TS Frontend
+    ├── src/api             # TanStack axios services
+    ├── src/components      # Reusable layouts and route guards
+    ├── src/pages           # Auth & Dashboard page views
+    └── package.json
 ```
 
-## Prerequisites
+---
 
-- Java 21
-- Maven 3.9+
-- Node.js 20+
-- MySQL 8.0+ (or use Docker Compose)
+## ⚙️ Getting Started
 
-## Quick Start (Local)
+### 1. Database Setup
+Execute Flyway migrations automatically by setting database credentials in `backend/src/main/resources/application.properties`.
 
-### 1. Start MySQL
-
-```bash
-docker compose up mysql -d
-```
-
-### 2. Backend
-
+### 2. Run Backend Services
 ```bash
 cd backend
 mvn spring-boot:run
 ```
 
-- API: http://localhost:8080
-- Swagger UI: http://localhost:8080/swagger-ui.html
-- Health: http://localhost:8080/actuator/health
-
-### 3. Frontend
-
+### 3. Run Frontend Portal
 ```bash
 cd frontend
-cp .env.example .env
 npm install
 npm run dev
 ```
 
-- App: http://localhost:5173
+---
 
-## Quick Start (Docker Compose)
+## 🧪 Testing Suites
 
+### Running Backend Tests
+Runs all unit and Testcontainers integration tests:
 ```bash
-docker compose up --build
+cd backend
+mvn test
 ```
 
-## Sprint 0 Status
-
-- [x] Backend project scaffold (Spring Boot 3.3, Java 21, Maven)
-- [x] Package structure for all modules
-- [x] Flyway configuration + baseline migration
-- [x] Security configuration skeleton
-- [x] Logging configuration (Logback + MDC request ID)
-- [x] Frontend project scaffold (React 18, TypeScript, Vite, MUI)
-- [x] Theme configuration
-- [x] React Router + TanStack Query setup
-- [ ] Business APIs (Sprint 1+)
-- [ ] Database schema migrations (Sprint 0 continuation)
-
-## Documentation
-
-See the `docs/` folder for BRS, API Design, API Specification, DB Design, TAD, and Development Plan.
+### Running Frontend Tests
+Runs UI component test suites:
+```bash
+cd frontend
+npm run test
+```
