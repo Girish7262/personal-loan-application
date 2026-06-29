@@ -21,8 +21,8 @@ describe('DashboardPage Component', () => {
   it('renders welcome greetings and loan application progress trackers correctly', () => {
     render(<DashboardPage />);
 
-    expect(screen.getByRole('heading', { name: /Welcome back, Girish!/i })).toBeDefined();
-    expect(screen.getByText(/Profile Completion/i)).toBeDefined();
-    expect(screen.getByText(/Active Loan Requests/i)).toBeDefined();
+    expect(screen.getByRole('heading', { name: /Enterprise Dashboard/i })).toBeDefined();
+    expect(screen.getByText(/Overview/i)).toBeDefined();
+    expect(screen.getByText(/My Loan Applications/i)).toBeDefined();
   });
 });

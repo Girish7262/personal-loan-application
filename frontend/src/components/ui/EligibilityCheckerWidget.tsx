@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Typography, Button, TextField, Grid, Collapse, Alert, AlertTitle } from '@mui/material';
+import { Box, Typography, Button, TextField, Grid, Collapse, InputAdornment, LinearProgress, Stack } from '@mui/material';
 import GlassCard from './GlassCard';
 import { CheckCircleOutline, ErrorOutline } from '@mui/icons-material';
 
@@ -54,108 +54,214 @@ const EligibilityCheckerWidget: React.FC = () => {
   };
 
   return (
-    <GlassCard sx={{ p: 4, height: '100%' }}>
-      <Typography variant="h4" color="primary" gutterBottom sx={{ fontWeight: 700 }}>
-        Eligibility Checker
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-        Check if you qualify for a personal loan in less than a minute.
-      </Typography>
+    <Box sx={{ height: '100%' }}>
+      <GlassCard 
+        sx={{ 
+          p: 4.5, 
+          height: '100%', 
+          display: 'flex', 
+          flexDirection: 'column',
+          border: '1px solid rgba(226, 232, 240, 0.8)',
+          boxShadow: '0 20px 40px -4px rgba(15, 23, 42, 0.06)',
+          borderRadius: 4
+        }}
+      >
+        <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1 }}>
+          <Box sx={{ width: 6, height: 24, borderRadius: 1, backgroundColor: '#D4AF37' }} />
+          <Typography variant="h4" color="primary" sx={{ fontWeight: 800, fontFamily: '"Poppins", sans-serif' }}>
+            Check Eligibility
+          </Typography>
+        </Stack>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 4, fontWeight: 500 }}>
+          Check your loan qualification limits instantly under safe bank-grade evaluation.
+        </Typography>
 
-      <form onSubmit={checkEligibility}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Gross Monthly Income (₹)"
-              variant="outlined"
-              fullWidth
-              value={monthlyIncome}
-              onChange={(e) => setMonthlyIncome(e.target.value.replace(/\D/g, ''))}
-              required
-            />
+        <form onSubmit={checkEligibility} style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+          <Grid container spacing={3} sx={{ mb: 4 }}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Gross Monthly Income"
+                variant="outlined"
+                fullWidth
+                value={monthlyIncome}
+                onChange={(e) => setMonthlyIncome(e.target.value.replace(/\D/g, ''))}
+                required
+                InputProps={{
+                  startAdornment: <InputAdornment position="start" sx={{ color: 'primary.main', fontWeight: 700 }}>₹</InputAdornment>,
+                }}
+                sx={{
+                  '& .MuiInputLabel-root': { fontWeight: 600 },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Existing Monthly EMIs"
+                variant="outlined"
+                fullWidth
+                value={existingEmis}
+                onChange={(e) => setExistingEmis(e.target.value.replace(/\D/g, ''))}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start" sx={{ color: 'primary.main', fontWeight: 700 }}>₹</InputAdornment>,
+                }}
+                sx={{
+                  '& .MuiInputLabel-root': { fontWeight: 600 },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Requested Loan Amount"
+                variant="outlined"
+                fullWidth
+                value={requestedAmount}
+                onChange={(e) => setRequestedAmount(e.target.value.replace(/\D/g, ''))}
+                required
+                InputProps={{
+                  startAdornment: <InputAdornment position="start" sx={{ color: 'primary.main', fontWeight: 700 }}>₹</InputAdornment>,
+                }}
+                sx={{
+                  '& .MuiInputLabel-root': { fontWeight: 600 },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Requested Tenure"
+                variant="outlined"
+                fullWidth
+                value={tenure}
+                onChange={(e) => setTenure(e.target.value.replace(/\D/g, ''))}
+                required
+                InputProps={{
+                  endAdornment: <InputAdornment position="end" sx={{ color: 'text.secondary', fontWeight: 700, fontSize: '0.8rem' }}>Months</InputAdornment>,
+                }}
+                sx={{
+                  '& .MuiInputLabel-root': { fontWeight: 600 },
+                }}
+              />
+            </Grid>
           </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Existing Monthly EMIs (₹)"
-              variant="outlined"
-              fullWidth
-              value={existingEmis}
-              onChange={(e) => setExistingEmis(e.target.value.replace(/\D/g, ''))}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Requested Loan Amount (₹)"
-              variant="outlined"
-              fullWidth
-              value={requestedAmount}
-              onChange={(e) => setRequestedAmount(e.target.value.replace(/\D/g, ''))}
-              required
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Tenure (Months)"
-              variant="outlined"
-              fullWidth
-              value={tenure}
-              onChange={(e) => setTenure(e.target.value.replace(/\D/g, ''))}
-              required
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              fullWidth
-              size="large"
-              sx={{ py: 1.5, mt: 1 }}
-            >
-              Check My Eligibility
-            </Button>
-          </Grid>
-        </Grid>
-      </form>
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            size="large"
+            sx={{ 
+              py: 2.2, 
+              fontWeight: 700, 
+              fontSize: '1rem',
+              borderRadius: 2.5,
+              textTransform: 'uppercase',
+              letterSpacing: 1,
+              background: 'linear-gradient(135deg, #0B2E59 0%, #1D4ED8 100%)',
+              boxShadow: '0 8px 24px rgba(11, 46, 89, 0.2)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #051833 0%, #0B2E59 100%)',
+                boxShadow: '0 12px 30px rgba(11, 46, 89, 0.3)',
+              }
+            }}
+          >
+            Check My Eligibility
+          </Button>
+        </form>
 
-      <Collapse in={result !== null}>
-        {result && (
-          <Box sx={{ mt: 4 }}>
-            {result.eligible ? (
-              <Alert
-                icon={<CheckCircleOutline fontSize="inherit" />}
-                severity="success"
-                sx={{ borderRadius: 3, border: '1px solid rgba(16, 185, 129, 0.2)' }}
-              >
-                <AlertTitle sx={{ fontWeight: 700 }}>Congratulations! You are Eligible</AlertTitle>
-                Based on your monthly income of **{formatCurrency(parseFloat(monthlyIncome))}**, you qualify for this loan request.
-                <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                  <Typography variant="body2">Proposed Monthly EMI: **{formatCurrency(result.proposedEmi)}**</Typography>
-                  <Typography variant="body2">Debt-to-Income (FOIR): **{result.foir}%** (Limit: 50%)</Typography>
-                  <Typography variant="body2">Max Eligible Limit: **{formatCurrency(result.maxAmount)}**</Typography>
+        <Collapse in={result !== null}>
+          {result && (
+            <Box sx={{ mt: 4 }}>
+              {result.eligible ? (
+                <Box
+                  sx={{
+                    borderRadius: 4,
+                    p: 3.5,
+                    backgroundColor: 'rgba(22, 163, 74, 0.03)',
+                    border: '1px dashed rgba(22, 163, 74, 0.3)',
+                    color: '#0F172A',
+                  }}
+                >
+                  <Stack direction="row" spacing={1.5} alignItems="flex-start" sx={{ mb: 2 }}>
+                    <CheckCircleOutline sx={{ color: '#16A34A', fontSize: 26, mt: 0.2 }} />
+                    <Box>
+                      <Typography variant="body1" sx={{ fontWeight: 800, color: '#16A34A', fontSize: '1.1rem' }}>
+                        Congratulations! You qualify for the loan.
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                        Based on an industry standard Debt-To-Income Limit (FOIR: 50%)
+                      </Typography>
+                    </Box>
+                  </Stack>
+
+                  <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid rgba(22, 163, 74, 0.1)' }}>
+                    <Grid container spacing={3}>
+                      <Grid item xs={6} sm={4}>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 700, letterSpacing: 0.5 }}>PROPOSED EMI</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 800, color: '#0B2E59', mt: 0.5 }}>{formatCurrency(result.proposedEmi)}/mo</Typography>
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 700, letterSpacing: 0.5 }}>DEBT RATIO (FOIR)</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 800, color: result.foir > 40 ? '#D4AF37' : '#16A34A', mt: 0.5 }}>{result.foir}%</Typography>
+                      </Grid>
+                      <Grid item xs={12} sm={4}>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 700, letterSpacing: 0.5 }}>MAX APPROVED LIMIT</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 800, color: '#16A34A', mt: 0.5 }}>{formatCurrency(result.maxAmount)}</Typography>
+                      </Grid>
+                    </Grid>
+                  </Box>
+
+                  <Box sx={{ mt: 3 }}>
+                    <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>Income Allocation</Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>{result.foir}% Used</Typography>
+                    </Stack>
+                    <LinearProgress variant="determinate" value={result.foir} color={result.foir > 40 ? "warning" : "success"} sx={{ height: 6, borderRadius: 3 }} />
+                  </Box>
                 </Box>
-              </Alert>
-            ) : (
-              <Alert
-                icon={<ErrorOutline fontSize="inherit" />}
-                severity="error"
-                sx={{ borderRadius: 3, border: '1px solid rgba(239, 68, 68, 0.2)' }}
-              >
-                <AlertTitle sx={{ fontWeight: 700 }}>Eligibility Limit Exceeded</AlertTitle>
-                Your total monthly debt commitments exceed 50% of your gross income.
-                <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                  <Typography variant="body2">Current FOIR: **{result.foir}%** (Max Allowed: 50%)</Typography>
-                  <Typography variant="body2">Maximum eligible loan amount: **{formatCurrency(result.maxAmount)}**</Typography>
-                  <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic' }}>
-                    💡 Tip: Try increasing your tenure or reducing requested amount.
+              ) : (
+                <Box
+                  sx={{
+                    borderRadius: 4,
+                    p: 3.5,
+                    backgroundColor: 'rgba(220, 38, 38, 0.03)',
+                    border: '1px dashed rgba(220, 38, 38, 0.3)',
+                    color: '#0F172A',
+                  }}
+                >
+                  <Stack direction="row" spacing={1.5} alignItems="flex-start" sx={{ mb: 2 }}>
+                    <ErrorOutline sx={{ color: '#DC2626', fontSize: 26, mt: 0.2 }} />
+                    <Box>
+                      <Typography variant="body1" sx={{ fontWeight: 800, color: '#DC2626', fontSize: '1.1rem' }}>
+                        Eligibility Criteria Not Met
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                        Debt obligations exceed 50% limit threshold.
+                      </Typography>
+                    </Box>
+                  </Stack>
+
+                  <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid rgba(220, 38, 38, 0.1)' }}>
+                    <Grid container spacing={3}>
+                      <Grid item xs={6} sm={6}>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 700, letterSpacing: 0.5 }}>DEBT RATIO</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 800, color: '#DC2626', mt: 0.5 }}>{result.foir}% <Typography variant="caption" color="text.secondary">(Max: 50%)</Typography></Typography>
+                      </Grid>
+                      <Grid item xs={6} sm={6}>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 700, letterSpacing: 0.5 }}>MAX LOAN CAPACITY</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 800, color: '#0F172A', mt: 0.5 }}>{formatCurrency(result.maxAmount)}</Typography>
+                      </Grid>
+                    </Grid>
+                  </Box>
+
+                  <Typography variant="body2" sx={{ mt: 3, display: 'flex', alignItems: 'center', gap: 0.8, fontStyle: 'italic', color: '#64748B', fontWeight: 500 }}>
+                    💡 Tip: Try increasing the requested loan tenure or lowering the loan principal.
                   </Typography>
                 </Box>
-              </Alert>
-            )}
-          </Box>
-        )}
-      </Collapse>
-    </GlassCard>
+              )}
+            </Box>
+          )}
+        </Collapse>
+      </GlassCard>
+    </Box>
   );
 };
 

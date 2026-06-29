@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Typography, Button, TextField, InputAdornment, IconButton, Link, Alert, CircularProgress } from '@mui/material';
-import { Visibility, VisibilityOff, AccountCircleOutlined, LockOutlined, EmailOutlined, PhoneOutlined } from '@mui/icons-material';
+import { Visibility, VisibilityOff, LockOutlined, EmailOutlined, PhoneOutlined } from '@mui/icons-material';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -67,7 +68,7 @@ const RegisterPage: React.FC = () => {
   return (
     <Box
       sx={{
-        background: 'radial-gradient(circle at 10% 20%, rgba(11, 34, 64, 1) 0%, rgba(15, 45, 80, 1) 90.1%)',
+        background: 'radial-gradient(circle at 50% 50%, rgba(29, 78, 216, 0.15) 0%, rgba(10, 17, 40, 1) 70%), #0A1128',
         minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
@@ -75,41 +76,38 @@ const RegisterPage: React.FC = () => {
         p: 2,
       }}
     >
-      <GlassCard sx={{ width: '100%', maxWidth: 500, p: 4, textAlign: 'center', borderRadius: 5 }}>
+      <GlassCard sx={{ width: '100%', maxWidth: 500, p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', borderRadius: 5 }}>
         {/* Banking Brand Header */}
         <Box sx={{ mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Box
-            sx={{
-              display: 'inline-flex',
-              p: 1.5,
-              borderRadius: 3,
-              backgroundColor: 'rgba(197, 168, 128, 0.1)',
-              color: 'secondary.main',
-              mb: 2,
-            }}
-          >
-            <AccountCircleOutlined sx={{ fontSize: 32 }} />
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 0.8, borderRadius: 2, backgroundColor: 'rgba(212, 175, 55, 0.1)', border: '1px solid rgba(212, 175, 55, 0.2)', mb: 2 }}>
+            <AccountBalanceIcon sx={{ fontSize: 24, color: '#D4AF37' }} />
           </Box>
-          <Typography variant="h3" color="primary" sx={{ fontWeight: 800 }}>
+          <Typography variant="h5" sx={{ fontWeight: 800, fontFamily: '"Poppins", sans-serif', letterSpacing: '0.02em', display: 'flex', alignItems: 'center', color: '#0B2E59', mb: 1.5 }}>
+            APEX
+            <Box component="span" sx={{ color: '#D4AF37', fontWeight: 300, ml: 0.5 }}>
+              LOAN
+            </Box>
+          </Typography>
+          <Typography variant="h3" color="primary" sx={{ fontWeight: 800, fontFamily: '"Poppins", sans-serif' }}>
             Create Account
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Sign up to check customized pre-approved loan options
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
+            Sign up to check customized pre-approved loan options.
           </Typography>
         </Box>
 
         {errorMsg && (
-          <Alert severity="error" sx={{ mb: 3, textAlign: 'left', borderRadius: 3 }}>
+          <Alert severity="error" sx={{ mb: 3, width: '100%', textAlign: 'left', borderRadius: 3 }}>
             {errorMsg}
           </Alert>
         )}
         {successMsg && (
-          <Alert severity="success" sx={{ mb: 3, textAlign: 'left', borderRadius: 3 }}>
+          <Alert severity="success" sx={{ mb: 3, width: '100%', textAlign: 'left', borderRadius: 3 }}>
             {successMsg}
           </Alert>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} style={{ width: '100%' }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
             <TextField
               label="Email Address"
@@ -191,14 +189,23 @@ const RegisterPage: React.FC = () => {
               fullWidth
               size="large"
               disabled={isLoading}
-              sx={{ py: 1.5, mt: 1 }}
+              sx={{ 
+                py: 1.8, 
+                fontWeight: 700, 
+                boxShadow: '0 4px 14px rgba(11, 46, 89, 0.2)',
+                background: 'linear-gradient(135deg, #0B2E59 0%, #1D4ED8 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #051833 0%, #0B2E59 100%)',
+                  boxShadow: '0 6px 20px rgba(11, 46, 89, 0.3)',
+                }
+              }}
             >
               {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Register Account'}
             </Button>
 
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
               Already have an account?{' '}
-              <Link component={RouterLink} to="/login" color="primary" sx={{ fontWeight: 600 }}>
+              <Link component={RouterLink} to="/login" color="primary" sx={{ fontWeight: 600, textDecoration: 'none', '&:hover': { color: '#D4AF37' } }}>
                 Sign In here
               </Link>
             </Typography>

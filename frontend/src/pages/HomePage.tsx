@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -12,15 +12,11 @@ import {
   Paper,
   Chip,
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
   Avatar,
   AvatarGroup,
-  Stepper,
-  Step,
-  StepLabel,
   InputAdornment,
   CircularProgress,
   Alert,
@@ -34,22 +30,79 @@ import {
   AccountBalanceWallet,
   Stars,
   ArrowForward,
-  PhoneIphone,
-  LockOutlined,
   CheckCircle,
-  Fingerprint,
+  Fingerprint as FingerprintIcon,
   LocalActivity,
-  CheckCircleOutline,
+  Group,
+  ThumbUp,
+  HeadsetMic,
+  Assignment as AssignmentIcon,
+  FactCheck as FactCheckIcon,
+  Description as DescriptionIcon,
+  MonetizationOn as MonetizationOnIcon,
+  Star,
 } from '@mui/icons-material';
 import EmiCalculatorWidget from '@/components/ui/EmiCalculatorWidget';
 import EligibilityCheckerWidget from '@/components/ui/EligibilityCheckerWidget';
-import LoanTimeline from '@/components/ui/LoanTimeline';
 import GlassCard from '@/components/ui/GlassCard';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { authApi } from '@/api/authApi';
+
+const processSteps = [
+  { 
+    title: 'Apply Online', 
+    desc: 'Fill basic details in 2 minutes', 
+    icon: <AssignmentIcon sx={{ fontSize: 26 }} /> 
+  },
+  { 
+    title: 'Verify Identity', 
+    desc: 'Secure KYC with Aadhaar & PAN', 
+    icon: <FingerprintIcon sx={{ fontSize: 26 }} /> 
+  },
+  { 
+    title: 'Get Approved', 
+    desc: 'Instant verification by our system', 
+    icon: <FactCheckIcon sx={{ fontSize: 26 }} /> 
+  },
+  { 
+    title: 'Receive Offer', 
+    desc: 'View loan offer and accept digitally', 
+    icon: <DescriptionIcon sx={{ fontSize: 26 }} /> 
+  },
+  { 
+    title: 'Get Disbursed', 
+    desc: 'Amount credited to your account', 
+    icon: <MonetizationOnIcon sx={{ fontSize: 26 }} /> 
+  }
+];
+
+const testimonials = [
+  {
+    name: 'Rahul Sharma',
+    role: 'Software Architect',
+    avatar: 'https://i.pravatar.cc/100?img=33',
+    feedback: 'The Aadhaar KYC verification took under 2 minutes. The loan amount was credited to my account the same afternoon. Absolutely seamless fintech portal.',
+    rating: 5,
+  },
+  {
+    name: 'Priya Patel',
+    role: 'Business Director',
+    avatar: 'https://i.pravatar.cc/100?img=47',
+    feedback: 'Apex Loan offered me a competitive interest rate of 10.25% p.a. for my expansion needs. The interface is highly transparent and informative.',
+    rating: 5,
+  },
+  {
+    name: 'Amit Verma',
+    role: 'Financial Consultant',
+    avatar: 'https://i.pravatar.cc/100?img=12',
+    feedback: 'Outstanding customer support. The monthly EMIs are customized perfectly to my budget, and there are absolutely no hidden service fees.',
+    rating: 5,
+  }
+];
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Multi-step Apply Now Wizard state
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -72,6 +125,15 @@ const HomePage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const [wizardError, setWizardError] = useState<string | null>(null);
+
+  // Hook up redirect trigger parameter from navbar
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('apply') === 'true') {
+      handleOpenWizard();
+      navigate('/', { replace: true });
+    }
+  }, [location.search, navigate]);
 
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
@@ -178,80 +240,90 @@ const HomePage: React.FC = () => {
 
   return (
     <Box sx={{ backgroundColor: '#F8FAFC', minHeight: '100vh', pb: 10 }}>
-      {/* Hero Section */}
+      {/* Immersive Dark Blue Hero Section */}
       <Box
         id="hero"
         sx={{
-          background: 'radial-gradient(circle at 10% 20%, #0B2E59 0%, #051833 90%)',
+          background: 'radial-gradient(circle at 80% 20%, rgba(29, 78, 216, 0.15) 0%, rgba(10, 17, 40, 1) 70%), #0A1128',
           color: '#FFFFFF',
-          pt: { xs: 8, md: 10 },
+          pt: { xs: 8, md: 12 },
           pb: { xs: 12, md: 16 },
-          clipPath: 'ellipse(140% 100% at 50% 0%)',
           position: 'relative',
           overflow: 'hidden',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
         }}
       >
-        {/* Glow circles behind text */}
-        <Box sx={{ position: 'absolute', top: '-10%', right: '5%', width: 450, height: 450, borderRadius: '50%', background: 'radial-gradient(circle, rgba(29,78,216,0.18) 0%, transparent 70%)', filter: 'blur(50px)' }} />
-
-        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
           <Grid container spacing={6} alignItems="center">
-            {/* Left side text */}
+            {/* Left side content */}
             <Grid item xs={12} md={7}>
-              <Typography variant="h1" gutterBottom sx={{ fontWeight: 800, fontSize: { xs: '2.5rem', md: '3.5rem' }, lineHeight: 1.15 }}>
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 3 }}>
+                <Box sx={{ display: 'inline-flex', px: 2, py: 0.6, borderRadius: 5, backgroundColor: 'rgba(212, 175, 55, 0.1)', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
+                  <Typography variant="caption" sx={{ color: '#D4AF37', fontWeight: 700, letterSpacing: 0.5 }}>
+                    🏆 India's Most Trusted Digital Lending Partner
+                  </Typography>
+                </Box>
+              </Stack>
+
+              <Typography variant="h1" sx={{ color: '#FFFFFF', fontWeight: 850, fontSize: { xs: '2.75rem', md: '3.75rem' }, lineHeight: 1.15, mb: 2.5, letterSpacing: '-0.02em' }}>
                 Instant Personal Loans. <br />
-                <Box component="span" sx={{ color: '#D4AF37' }}>
+                <Box component="span" sx={{ background: 'linear-gradient(135deg, #F0C243 0%, #D4AF37 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                   Decisions in Minutes.
                 </Box>
               </Typography>
-              <Typography variant="body1" sx={{ mb: 4, opacity: 0.9, fontSize: '1.15rem', lineHeight: 1.6, maxWidth: 620 }}>
-                Get up to ₹50 Lakhs with minimal paperwork, 100% digital process and transparent approvals.
+              <Typography variant="body1" sx={{ mb: 4.5, color: '#94A3B8', fontSize: '1.15rem', lineHeight: 1.7, maxWidth: 600 }}>
+                Get up to ₹50 Lakhs with zero manual paperwork, a 100% encrypted digital pipeline, and instant approval evaluation.
               </Typography>
-              
-              {/* Trust features row */}
-              <Grid container spacing={2} sx={{ mb: 4, maxWidth: 620 }}>
+
+              {/* Trust Indicators */}
+              <Grid container spacing={2.5} sx={{ mb: 5, maxWidth: 600 }}>
                 <Grid item xs={6}>
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <CheckCircleOutline sx={{ color: '#D4AF37', fontSize: 20 }} />
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Secure & Trusted (AES-256)</Typography>
+                  <Stack direction="row" alignItems="center" spacing={1.5}>
+                    <CheckCircle sx={{ fontSize: 18, color: '#D4AF37' }} />
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#E2E8F0' }}>Secure & Trusted (AES-256)</Typography>
                   </Stack>
                 </Grid>
                 <Grid item xs={6}>
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <CheckCircleOutline sx={{ color: '#D4AF37', fontSize: 20 }} />
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Instant Approval (In Minutes)</Typography>
+                  <Stack direction="row" alignItems="center" spacing={1.5}>
+                    <CheckCircle sx={{ fontSize: 18, color: '#D4AF37' }} />
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#E2E8F0' }}>Instant Evaluation (2 Mins)</Typography>
                   </Stack>
                 </Grid>
                 <Grid item xs={6}>
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <CheckCircleOutline sx={{ color: '#D4AF37', fontSize: 20 }} />
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Low Interest (From 9.5% p.a.)</Typography>
+                  <Stack direction="row" alignItems="center" spacing={1.5}>
+                    <CheckCircle sx={{ fontSize: 18, color: '#D4AF37' }} />
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#E2E8F0' }}>Low Interest (9.5% p.a.)</Typography>
                   </Stack>
                 </Grid>
                 <Grid item xs={6}>
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <CheckCircleOutline sx={{ color: '#D4AF37', fontSize: 20 }} />
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>No Hidden Charges (Transparent)</Typography>
+                  <Stack direction="row" alignItems="center" spacing={1.5}>
+                    <CheckCircle sx={{ fontSize: 18, color: '#D4AF37' }} />
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#E2E8F0' }}>Transparent Processing</Typography>
                   </Stack>
                 </Grid>
               </Grid>
 
               {/* CTAs */}
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5} sx={{ mb: 4 }}>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5} sx={{ mb: 5 }}>
                 <Button
                   onClick={handleOpenWizard}
                   variant="contained"
                   size="large"
                   endIcon={<ArrowForward />}
                   sx={{
-                    py: 2,
+                    py: 2.2,
                     px: 5,
-                    fontSize: '1.05rem',
+                    fontSize: '1rem',
                     backgroundColor: '#D4AF37',
-                    color: '#051833',
+                    color: '#050D1A',
                     fontWeight: 700,
-                    borderRadius: 3,
-                    '&:hover': { backgroundColor: '#E5C158', transform: 'translateY(-2px)' },
+                    borderRadius: 2.5,
+                    boxShadow: '0 8px 24px rgba(212, 175, 55, 0.35)',
+                    '&:hover': {
+                      backgroundColor: '#E5C158',
+                      boxShadow: '0 12px 30px rgba(212, 175, 55, 0.5)',
+                      transform: 'translateY(-2px)'
+                    },
                   }}
                 >
                   Apply Now
@@ -261,14 +333,19 @@ const HomePage: React.FC = () => {
                   variant="outlined"
                   size="large"
                   sx={{
-                    py: 2,
+                    py: 2.2,
                     px: 5,
-                    fontSize: '1.05rem',
+                    fontSize: '1rem',
                     color: '#FFFFFF',
-                    borderColor: 'rgba(255, 255, 255, 0.4)',
-                    fontWeight: 600,
-                    borderRadius: 3,
-                    '&:hover': { borderColor: '#D4AF37', color: '#D4AF37', transform: 'translateY(-2px)' },
+                    borderColor: 'rgba(255, 255, 255, 0.25)',
+                    fontWeight: 650,
+                    borderRadius: 2.5,
+                    backdropFilter: 'blur(4px)',
+                    '&:hover': {
+                      borderColor: '#FFFFFF',
+                      backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                      transform: 'translateY(-2px)'
+                    },
                   }}
                 >
                   Check Eligibility
@@ -287,79 +364,106 @@ const HomePage: React.FC = () => {
                   <Stack direction="row" spacing={0.2} sx={{ color: '#D4AF37' }}>
                     <Stars fontSize="small" /><Stars fontSize="small" /><Stars fontSize="small" /><Stars fontSize="small" /><Stars fontSize="small" />
                   </Stack>
-                  <Typography variant="caption" sx={{ opacity: 0.8, fontWeight: 600 }}>
-                    4.9/5 (50,000+ happy customers)
+                  <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 600 }}>
+                    4.9/5 (50,000+ happy clients)
                   </Typography>
                 </Box>
               </Stack>
             </Grid>
 
-            {/* Right side Illustration Card Stack */}
-            <Grid item xs={12} md={5} sx={{ display: { xs: 'none', md: 'flex' }, justifyContent: 'center' }}>
-              <Box sx={{ position: 'relative', width: '100%', height: 380 }}>
-                {/* Visual Card 1 */}
+            {/* Right side Illustration Portrait Stack */}
+            <Grid item xs={12} md={5} sx={{ display: { xs: 'none', md: 'flex' }, justifyContent: 'center', position: 'relative' }}>
+              <Box sx={{ position: 'relative', width: '100%', maxWidth: 440, display: 'flex', justifyContent: 'center', alignItems: 'flex-end', height: 420 }}>
+                {/* Man Image */}
+                <Box
+                  component="img"
+                  src="/hero_man.png"
+                  alt="Premium Banking Customer"
+                  sx={{
+                    width: '85%',
+                    height: 'auto',
+                    maxHeight: 400,
+                    objectFit: 'contain',
+                    zIndex: 2,
+                    position: 'relative',
+                    filter: 'drop-shadow(0 20px 35px rgba(11, 46, 89, 0.35))',
+                  }}
+                />
+                
+                {/* Floating Blue Card 1 */}
                 <Paper
                   elevation={8}
                   sx={{
                     position: 'absolute',
-                    top: '5%',
-                    left: '5%',
-                    width: '85%',
-                    height: 220,
-                    borderRadius: 4,
+                    top: '10%',
+                    right: '-8%',
+                    width: 250,
+                    height: 150,
+                    borderRadius: 3.5,
                     background: 'linear-gradient(135deg, #0B2E59 0%, #1D4ED8 100%)',
                     color: '#FFFFFF',
-                    p: 4,
-                    boxShadow: '0 20px 45px rgba(11,46,89,0.3)',
-                    border: '1px solid rgba(255,255,255,0.15)',
-                    zIndex: 2,
+                    p: 2.5,
+                    boxShadow: '0 20px 40px rgba(11, 46, 89, 0.4)',
+                    border: '1px solid rgba(212, 175, 55, 0.35)',
+                    zIndex: 3,
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
+                    animation: 'floatCard1 6s ease-in-out infinite',
+                    '@keyframes floatCard1': {
+                      '0%, 100%': { transform: 'translateY(0px)' },
+                      '50%': { transform: 'translateY(-10px)' }
+                    }
                   }}
                 >
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <Box>
-                      <Typography variant="body2" sx={{ opacity: 0.7, letterSpacing: 2, fontSize: '0.75rem', fontWeight: 700 }}>
+                      <Typography variant="caption" sx={{ opacity: 0.7, letterSpacing: 1.5, fontSize: '0.6rem', fontWeight: 700 }}>
                         APEX PRIVILEGE CARD
                       </Typography>
-                      <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5, color: '#D4AF37' }}>
+                      <Typography variant="body1" sx={{ fontWeight: 800, mt: 0.2, color: '#D4AF37', fontSize: '1.1rem' }}>
                         ₹50,00,000
                       </Typography>
                     </Box>
-                    <Security sx={{ color: '#D4AF37', fontSize: 32 }} />
+                    <Security sx={{ color: '#D4AF37', fontSize: 22 }} />
                   </Box>
                   <Box>
-                    <Typography variant="caption" sx={{ display: 'block', opacity: 0.6, fontWeight: 700 }}>APPROVED LIMIT</Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 600, letterSpacing: 3, mt: 0.5 }}>**** **** **** 2026</Typography>
+                    <Typography variant="caption" sx={{ display: 'block', opacity: 0.6, fontSize: '0.55rem', fontWeight: 700 }}>APPROVED LIMIT</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600, letterSpacing: 2, fontSize: '0.75rem', mt: 0.2 }}>**** **** **** 2026</Typography>
                   </Box>
                 </Paper>
 
-                {/* Visual Card 2 (behind Card 1) */}
+                {/* Floating Dark Card 2 */}
                 <Paper
-                  elevation={4}
+                  elevation={6}
                   sx={{
                     position: 'absolute',
-                    top: '25%',
-                    left: '20%',
-                    width: '80%',
-                    height: 190,
-                    borderRadius: 4,
-                    background: 'rgba(255, 255, 255, 0.9)',
-                    border: '1px solid rgba(11,46,89,0.1)',
-                    p: 3.5,
-                    zIndex: 1,
+                    bottom: '15%',
+                    left: '-8%',
+                    width: 220,
+                    height: 95,
+                    borderRadius: 3.5,
+                    background: 'rgba(5, 13, 26, 0.95)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    p: 2.2,
+                    zIndex: 3,
                     display: 'flex',
-                    alignItems: 'flex-end',
+                    alignItems: 'center',
                     justifyContent: 'space-between',
-                    boxShadow: '0 12px 30px rgba(0,0,0,0.06)',
+                    boxShadow: '0 12px 28px rgba(0, 0, 0, 0.4)',
+                    animation: 'floatCard2 6s ease-in-out infinite',
+                    animationDelay: '1.5s',
+                    '@keyframes floatCard2': {
+                      '0%, 100%': { transform: 'translateY(0px)' },
+                      '50%': { transform: 'translateY(-8px)' }
+                    }
                   }}
                 >
-                  <Box sx={{ color: '#0B2E59' }}>
-                    <Typography variant="caption" sx={{ display: 'block', fontWeight: 700, color: 'text.secondary' }}>INTEREST RATE</Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#0B2E59' }}>11.5% p.a.</Typography>
+                  <Box sx={{ color: '#FFFFFF' }}>
+                    <Typography variant="caption" sx={{ display: 'block', fontWeight: 600, color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.6rem', letterSpacing: 0.5 }}>INTEREST RATE</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 800, color: '#FFFFFF', mt: 0.2 }}>11.5% p.a.</Typography>
                   </Box>
-                  <Chip label="PRE-APPROVED" color="success" size="small" sx={{ fontWeight: 700, px: 1 }} />
+                  <Chip label="PRE-APPROVED" color="success" size="small" sx={{ fontWeight: 700, fontSize: '0.65rem', height: 22, backgroundColor: '#16A34A' }} />
                 </Paper>
               </Box>
             </Grid>
@@ -367,35 +471,104 @@ const HomePage: React.FC = () => {
         </Container>
       </Box>
 
-      {/* Trusted Statistics Section */}
+      {/* Floating Statistics Dashboard */}
       <Box sx={{ mt: -6, mb: 10, position: 'relative', zIndex: 3 }}>
         <Container maxWidth="lg">
           <Paper
-            elevation={4}
+            elevation={6}
             sx={{
               borderRadius: 4,
               py: 4,
-              px: { xs: 3, md: 6 },
+              px: { xs: 3, md: 5 },
               backgroundColor: '#FFFFFF',
-              border: '1px solid rgba(226,232,240,0.8)',
+              border: '1px solid rgba(226, 232, 240, 0.8)',
+              boxShadow: '0 20px 45px -4px rgba(15, 23, 42, 0.08)',
             }}
           >
-            <Grid container spacing={4} justifyContent="center" alignItems="center">
-              <Grid item xs={6} md={3} sx={{ textAlign: 'center', borderRight: { md: '1px solid #E2E8F0' } }}>
-                <Typography variant="h2" color="primary" sx={{ fontWeight: 800 }}>₹500Cr+</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontWeight: 600 }}>Loans Disbursed</Typography>
+            <Grid container spacing={3} justifyContent="center" alignItems="center">
+              <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center', 
+                  textAlign: 'center',
+                  p: 2.5,
+                  borderRadius: 3,
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    backgroundColor: 'rgba(11, 46, 89, 0.02)',
+                  }
+                }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 52, height: 52, borderRadius: '50%', backgroundColor: 'rgba(11, 46, 89, 0.06)', color: '#0B2E59', mb: 2 }}>
+                    <AccountBalanceWallet sx={{ fontSize: 24 }} />
+                  </Box>
+                  <Typography variant="h2" color="primary" sx={{ fontWeight: 800, fontSize: { xs: '1.8rem', md: '2.3rem' } }}>₹500Cr+</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontWeight: 700 }}>Loans Disbursed</Typography>
+                </Box>
               </Grid>
-              <Grid item xs={6} md={3} sx={{ textAlign: 'center', borderRight: { md: '1px solid #E2E8F0' } }}>
-                <Typography variant="h2" color="primary" sx={{ fontWeight: 800 }}>50K+</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontWeight: 600 }}>Happy Customers</Typography>
+              <Grid item xs={12} sm={6} md={3} sx={{ borderLeft: { md: '1px solid #E2E8F0' } }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center', 
+                  textAlign: 'center',
+                  p: 2.5,
+                  borderRadius: 3,
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    backgroundColor: 'rgba(11, 46, 89, 0.02)',
+                  }
+                }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 52, height: 52, borderRadius: '50%', backgroundColor: 'rgba(29, 78, 216, 0.06)', color: '#1D4ED8', mb: 2 }}>
+                    <Group sx={{ fontSize: 24 }} />
+                  </Box>
+                  <Typography variant="h2" color="primary" sx={{ fontWeight: 800, fontSize: { xs: '1.8rem', md: '2.3rem' } }}>50K+</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontWeight: 700 }}>Happy Clients</Typography>
+                </Box>
               </Grid>
-              <Grid item xs={6} md={3} sx={{ textAlign: 'center', borderRight: { md: '1px solid #E2E8F0' } }}>
-                <Typography variant="h2" color="primary" sx={{ fontWeight: 800 }}>99%</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontWeight: 600 }}>Approval Satisfaction</Typography>
+              <Grid item xs={12} sm={6} md={3} sx={{ borderLeft: { md: '1px solid #E2E8F0' } }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center', 
+                  textAlign: 'center',
+                  p: 2.5,
+                  borderRadius: 3,
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    backgroundColor: 'rgba(11, 46, 89, 0.02)',
+                  }
+                }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 52, height: 52, borderRadius: '50%', backgroundColor: 'rgba(212, 175, 55, 0.08)', color: '#D4AF37', mb: 2 }}>
+                    <ThumbUp sx={{ fontSize: 22 }} />
+                  </Box>
+                  <Typography variant="h2" color="primary" sx={{ fontWeight: 800, fontSize: { xs: '1.8rem', md: '2.3rem' } }}>99%</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontWeight: 700 }}>Approval Rate</Typography>
+                </Box>
               </Grid>
-              <Grid item xs={6} md={3} sx={{ textAlign: 'center' }}>
-                <Typography variant="h2" color="primary" sx={{ fontWeight: 800 }}>24x7</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontWeight: 600 }}>Support Services</Typography>
+              <Grid item xs={12} sm={6} md={3} sx={{ borderLeft: { md: '1px solid #E2E8F0' } }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center', 
+                  textAlign: 'center',
+                  p: 2.5,
+                  borderRadius: 3,
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    backgroundColor: 'rgba(11, 46, 89, 0.02)',
+                  }
+                }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 52, height: 52, borderRadius: '50%', backgroundColor: 'rgba(22, 163, 74, 0.06)', color: '#16A34A', mb: 2 }}>
+                    <HeadsetMic sx={{ fontSize: 24 }} />
+                  </Box>
+                  <Typography variant="h2" color="primary" sx={{ fontWeight: 800, fontSize: { xs: '1.8rem', md: '2.3rem' } }}>24x7</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontWeight: 700 }}>Institutional Support</Typography>
+                </Box>
               </Grid>
             </Grid>
           </Paper>
@@ -404,105 +577,194 @@ const HomePage: React.FC = () => {
 
       {/* Feature Cards Section */}
       <Container maxWidth="lg" sx={{ mb: 12 }}>
-        <Typography variant="h2" color="primary" align="center" gutterBottom sx={{ fontWeight: 800 }}>
+        <Typography variant="h2" color="primary" align="center" gutterBottom sx={{ fontWeight: 800, fontFamily: '"Poppins", sans-serif' }}>
           Why Choose Apex Loan?
         </Typography>
-        <Typography variant="body1" color="text.secondary" align="center" sx={{ mb: 8, maxWidth: 650, mx: 'auto' }}>
-          Technology, transparency and trust come together for the best loan experience.
+        <Typography variant="body1" color="text.secondary" align="center" sx={{ mb: 6, maxWidth: 650, mx: 'auto', fontWeight: 500 }}>
+          Technology, transparency and institutional trust integrated to deliver the ultimate loan ecosystem.
         </Typography>
 
         <Grid container spacing={4}>
           <Grid item xs={12} sm={6} md={4}>
-            <GlassCard sx={{ p: 4, height: '100%' }}>
+            <GlassCard sx={{ p: 4, height: '100%', border: '1px solid rgba(226, 232, 240, 0.8)', borderLeft: '4px solid #1D4ED8', transition: 'all 0.3s', '&:hover': { transform: 'scale(1.02)' } }}>
               <Box sx={{ display: 'inline-flex', p: 1.5, borderRadius: 3, backgroundColor: 'rgba(29,78,216,0.06)', color: 'secondary.main', mb: 2.5 }}>
                 <FlashOn sx={{ fontSize: 28 }} />
               </Box>
-              <Typography variant="h5" sx={{ mb: 1.5, fontWeight: 700 }}>Instant Approval</Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                Get approval in minutes with smart algorithms.
+              <Typography variant="h5" sx={{ mb: 1.5, fontWeight: 700, color: '#0B2E59', fontFamily: '"Poppins", sans-serif' }}>Instant Approval</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7, fontWeight: 500 }}>
+                Automatic credit risk verification resolves loan applications in under 2 minutes.
               </Typography>
             </GlassCard>
           </Grid>
 
           <Grid item xs={12} sm={6} md={4}>
-            <GlassCard sx={{ p: 4, height: '100%' }}>
+            <GlassCard sx={{ p: 4, height: '100%', border: '1px solid rgba(226, 232, 240, 0.8)', borderLeft: '4px solid #D4AF37', transition: 'all 0.3s', '&:hover': { transform: 'scale(1.02)' } }}>
               <Box sx={{ display: 'inline-flex', p: 1.5, borderRadius: 3, backgroundColor: 'rgba(212,175,55,0.08)', color: '#D4AF37', mb: 2.5 }}>
                 <CloudUpload sx={{ fontSize: 28 }} />
               </Box>
-              <Typography variant="h5" sx={{ mb: 1.5, fontWeight: 700 }}>Paperless Process</Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                Upload documents digitally with secure verification.
+              <Typography variant="h5" sx={{ mb: 1.5, fontWeight: 700, color: '#0B2E59', fontFamily: '"Poppins", sans-serif' }}>Paperless Process</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7, fontWeight: 500 }}>
+                100% digital KYC pipeline with Aadhaar, PAN, and secure e-Sign documentation.
               </Typography>
             </GlassCard>
           </Grid>
 
           <Grid item xs={12} sm={6} md={4}>
-            <GlassCard sx={{ p: 4, height: '100%' }}>
+            <GlassCard sx={{ p: 4, height: '100%', border: '1px solid rgba(226, 232, 240, 0.8)', borderLeft: '4px solid #16A34A', transition: 'all 0.3s', '&:hover': { transform: 'scale(1.02)' } }}>
               <Box sx={{ display: 'inline-flex', p: 1.5, borderRadius: 3, backgroundColor: 'rgba(22,163,74,0.06)', color: 'success.main', mb: 2.5 }}>
                 <Security sx={{ fontSize: 28 }} />
               </Box>
-              <Typography variant="h5" sx={{ mb: 1.5, fontWeight: 700 }}>Bank-grade Security</Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                Your data is protected with AES-256 encryption.
+              <Typography variant="h5" sx={{ mb: 1.5, fontWeight: 700, color: '#0B2E59', fontFamily: '"Poppins", sans-serif' }}>Bank-grade Security</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7, fontWeight: 500 }}>
+                End-to-end data encryption secured via industry-standard SSL and AES-256 protocols.
               </Typography>
             </GlassCard>
           </Grid>
 
           <Grid item xs={12} sm={6} md={4}>
-            <GlassCard sx={{ p: 4, height: '100%' }}>
+            <GlassCard sx={{ p: 4, height: '100%', border: '1px solid rgba(226, 232, 240, 0.8)', borderLeft: '4px solid #0284C7', transition: 'all 0.3s', '&:hover': { transform: 'scale(1.02)' } }}>
               <Box sx={{ display: 'inline-flex', p: 1.5, borderRadius: 3, backgroundColor: 'rgba(2,132,199,0.06)', color: 'info.main', mb: 2.5 }}>
                 <AccountBalanceWallet sx={{ fontSize: 28 }} />
               </Box>
-              <Typography variant="h5" sx={{ mb: 1.5, fontWeight: 700 }}>Lowest Interest Rate</Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                Competitive rates starting from 9.5% p.a.
+              <Typography variant="h5" sx={{ mb: 1.5, fontWeight: 700, color: '#0B2E59', fontFamily: '"Poppins", sans-serif' }}>Competitive Rates</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7, fontWeight: 500 }}>
+                Attractive interest rate thresholds starting as low as 9.5% p.a.
               </Typography>
             </GlassCard>
           </Grid>
 
           <Grid item xs={12} sm={6} md={4}>
-            <GlassCard sx={{ p: 4, height: '100%' }}>
+            <GlassCard sx={{ p: 4, height: '100%', border: '1px solid rgba(226, 232, 240, 0.8)', borderLeft: '4px solid #DC2626', transition: 'all 0.3s', '&:hover': { transform: 'scale(1.02)' } }}>
               <Box sx={{ display: 'inline-flex', p: 1.5, borderRadius: 3, backgroundColor: 'rgba(220,38,38,0.06)', color: 'error.main', mb: 2.5 }}>
                 <VerifiedUser sx={{ fontSize: 28 }} />
               </Box>
-              <Typography variant="h5" sx={{ mb: 1.5, fontWeight: 700 }}>Flexible Repayment</Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                Choose EMIs that fit your budget.
+              <Typography variant="h5" sx={{ mb: 1.5, fontWeight: 700, color: '#0B2E59', fontFamily: '"Poppins", sans-serif' }}>Flexible Tenures</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7, fontWeight: 500 }}>
+                Structured repayment models offering options from 6 to 84 months.
               </Typography>
             </GlassCard>
           </Grid>
 
           <Grid item xs={12} sm={6} md={4}>
-            <GlassCard sx={{ p: 4, height: '100%' }}>
+            <GlassCard sx={{ p: 4, height: '100%', border: '1px solid rgba(226, 232, 240, 0.8)', borderLeft: '4px solid #0B2E59', transition: 'all 0.3s', '&:hover': { transform: 'scale(1.02)' } }}>
               <Box sx={{ display: 'inline-flex', p: 1.5, borderRadius: 3, backgroundColor: 'rgba(11,46,89,0.06)', color: 'primary.main', mb: 2.5 }}>
                 <LocalActivity sx={{ fontSize: 28 }} />
               </Box>
-              <Typography variant="h5" sx={{ mb: 1.5, fontWeight: 700 }}>Transparent Charges</Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                No hidden charges. No surprises.
+              <Typography variant="h5" sx={{ mb: 1.5, fontWeight: 700, color: '#0B2E59', fontFamily: '"Poppins", sans-serif' }}>Zero Hidden Charges</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7, fontWeight: 500 }}>
+                Complete transparency. Every fee component is detailed clearly.
               </Typography>
             </GlassCard>
           </Grid>
         </Grid>
       </Container>
 
-      {/* Loan Journey Timeline */}
-      <Box id="journey" sx={{ backgroundColor: 'rgba(11,46,89,0.02)', py: 10, mb: 12 }}>
+      {/* Rebuilt Process Stepper Section */}
+      <Box id="journey" sx={{ backgroundColor: 'rgba(11,46,89,0.02)', py: 10, mb: 12, borderTop: '1px solid rgba(11,46,89,0.04)', borderBottom: '1px solid rgba(11,46,89,0.04)' }}>
         <Container maxWidth="lg">
-          <Typography variant="h2" color="primary" align="center" gutterBottom sx={{ fontWeight: 800 }}>
-            Our Simple 5-Step Loan Process
+          <Typography variant="h2" color="primary" align="center" gutterBottom sx={{ fontWeight: 800, fontFamily: '"Poppins", sans-serif' }}>
+            Our Seamless Step-by-Step Journey
           </Typography>
-          <Typography variant="body1" color="text.secondary" align="center" sx={{ mb: 8 }}>
-            From application to disbursement - completely digital and transparent.
+          <Typography variant="body1" color="text.secondary" align="center" sx={{ mb: 8, fontWeight: 500 }}>
+            Submit details, authenticate, verify limits, and receive disbursal completely online.
           </Typography>
-          <GlassCard sx={{ p: 4 }}>
-            <LoanTimeline currentStatus="SUBMITTED" />
-          </GlassCard>
+
+          <Box sx={{ position: 'relative' }}>
+            {/* Horizontal Line behind icons (Desktop) */}
+            <Box
+              sx={{
+                display: { xs: 'none', md: 'block' },
+                position: 'absolute',
+                top: 35,
+                left: '10%',
+                right: '10%',
+                height: '2.5px',
+                backgroundImage: 'linear-gradient(to right, rgba(11, 46, 89, 0.2) 33%, rgba(255,255,255,0) 0%)',
+                backgroundSize: '12px 100%',
+                backgroundRepeat: 'repeat-x',
+                zIndex: 1,
+              }}
+            />
+            {/* Vertical Line behind icons (Mobile) */}
+            <Box
+              sx={{
+                display: { xs: 'block', md: 'none' },
+                position: 'absolute',
+                top: 35,
+                bottom: 35,
+                left: '50%',
+                width: '2px',
+                backgroundImage: 'linear-gradient(to bottom, rgba(11, 46, 89, 0.2) 33%, rgba(255,255,255,0) 0%)',
+                backgroundSize: '100% 12px',
+                backgroundRepeat: 'repeat-y',
+                zIndex: 1,
+                transform: 'translateX(-50%)',
+              }}
+            />
+
+            <Grid container spacing={4} justifyContent="space-between" sx={{ position: 'relative', zIndex: 2 }}>
+              {processSteps.map((step, idx) => (
+                <Grid item xs={12} sm={6} md={2.4} key={idx}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                    <Box sx={{
+                      width: 70,
+                      height: 70,
+                      borderRadius: '50%',
+                      backgroundColor: '#FFFFFF',
+                      border: '2px solid #E2E8F0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#0B2E59',
+                      boxShadow: '0 8px 24px rgba(15, 23, 42, 0.05)',
+                      position: 'relative',
+                      transition: 'all 0.3s',
+                      '&:hover': {
+                        borderColor: '#D4AF37',
+                        color: '#D4AF37',
+                        transform: 'scale(1.08)',
+                        boxShadow: '0 12px 30px rgba(212, 175, 55, 0.2)',
+                      }
+                    }}>
+                      {step.icon}
+                      <Box sx={{
+                        position: 'absolute',
+                        top: -4,
+                        right: -4,
+                        width: 24,
+                        height: 24,
+                        borderRadius: '50%',
+                        backgroundColor: '#D4AF37',
+                        color: '#050D1A',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 800,
+                        fontSize: '0.75rem',
+                        border: '2px solid #FFFFFF'
+                      }}>
+                        {idx + 1}
+                      </Box>
+                    </Box>
+                    <Typography variant="h6" sx={{ mt: 3, fontWeight: 700, color: '#0B2E59', fontFamily: '"Poppins", sans-serif' }}>{step.title}</Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontSize: '0.85rem', lineHeight: 1.6, px: 2, fontWeight: 500 }}>{step.desc}</Typography>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
         </Container>
       </Box>
 
-      {/* Interactive Calculator Widgets */}
+      {/* Interactive Calculators Section */}
       <Container maxWidth="lg" sx={{ mb: 12 }}>
+        <Typography variant="h2" color="primary" align="center" gutterBottom sx={{ fontWeight: 800, fontFamily: '"Poppins", sans-serif' }}>
+          Evaluate Your Financials
+        </Typography>
+        <Typography variant="body1" color="text.secondary" align="center" sx={{ mb: 8, fontWeight: 500 }}>
+          Check limits and plan monthly installments instantly.
+        </Typography>
+
         <Grid container spacing={5}>
           <Grid item xs={12} md={6} id="eligibility">
             <EligibilityCheckerWidget />
@@ -513,339 +775,395 @@ const HomePage: React.FC = () => {
         </Grid>
       </Container>
 
-      {/* Testimonials */}
-      <Container maxWidth="lg" sx={{ mb: 12 }}>
-        <Typography variant="h2" color="primary" align="center" gutterBottom sx={{ fontWeight: 800 }}>
-          What Our Customers Say
-        </Typography>
-        <Typography variant="body1" color="text.secondary" align="center" sx={{ mb: 8 }}>
-          Hear from our happy customers about their experience.
-        </Typography>
+      {/* Customer Testimonials Section */}
+      <Box sx={{ backgroundColor: 'rgba(212, 175, 55, 0.02)', py: 10, mb: 12, borderTop: '1px solid rgba(212,175,55,0.04)', borderBottom: '1px solid rgba(212,175,55,0.04)' }}>
+        <Container maxWidth="lg">
+          <Typography variant="h2" color="primary" align="center" gutterBottom sx={{ fontWeight: 800, fontFamily: '"Poppins", sans-serif' }}>
+            What Our Customers Say
+          </Typography>
+          <Typography variant="body1" color="text.secondary" align="center" sx={{ mb: 8, fontWeight: 500 }}>
+            Hear from our verified clients who secured personal loans through our digital platform.
+          </Typography>
 
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={4}>
-            <GlassCard sx={{ p: 4 }}>
-              <Typography variant="body1" sx={{ fontStyle: 'italic', mb: 3, color: 'text.secondary', lineHeight: 1.7 }}>
-                "The entire process was digital and hassle-free. I got my loan approved in just 10 minutes!"
-              </Typography>
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Box sx={{ width: 48, height: 48, borderRadius: '50%', backgroundColor: '#0B2E59', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
-                  RS
-                </Box>
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Rahul Sharma</Typography>
-                  <Typography variant="caption" color="text.secondary">Pune, Maharashtra</Typography>
-                </Box>
-              </Stack>
-            </GlassCard>
+          <Grid container spacing={4}>
+            {testimonials.map((t, idx) => (
+              <Grid item xs={12} md={4} key={idx}>
+                <Paper
+                  elevation={3}
+                  sx={{
+                    p: 4,
+                    height: '100%',
+                    borderRadius: 4,
+                    backgroundColor: '#FFFFFF',
+                    border: '1px solid rgba(226, 232, 240, 0.8)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    transition: 'all 0.3s',
+                    '&:hover': {
+                      transform: 'translateY(-5px)',
+                      boxShadow: '0 16px 36px rgba(15, 23, 42, 0.08)'
+                    }
+                  }}
+                >
+                  <Box>
+                    <Stack direction="row" spacing={0.3} sx={{ color: '#D4AF37', mb: 2.5 }}>
+                      {[...Array(t.rating)].map((_, i) => (
+                        <Star key={i} fontSize="small" />
+                      ))}
+                    </Stack>
+                    <Typography variant="body2" color="text.primary" sx={{ fontStyle: 'italic', lineHeight: 1.7, mb: 3, fontSize: '0.92rem', fontWeight: 500 }}>
+                      "{t.feedback}"
+                    </Typography>
+                  </Box>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Avatar alt={t.name} src={t.avatar} sx={{ width: 48, height: 48, border: '2px solid #E2E8F0' }} />
+                    <Box>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0B2E59' }}>{t.name}</Typography>
+                      <Stack direction="row" spacing={0.8} alignItems="center">
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>{t.role}</Typography>
+                        <Chip label="VERIFIED" color="success" variant="outlined" size="small" sx={{ fontSize: '0.55rem', height: 16, fontWeight: 800, borderRadius: 1 }} />
+                      </Stack>
+                    </Box>
+                  </Stack>
+                </Paper>
+              </Grid>
+            ))}
           </Grid>
+        </Container>
+      </Box>
 
-          <Grid item xs={12} md={4}>
-            <GlassCard sx={{ p: 4 }}>
-              <Typography variant="body1" sx={{ fontStyle: 'italic', mb: 3, color: 'text.secondary', lineHeight: 1.7 }}>
-                "Best interest rates and 100% transparent process. Highly recommended!"
-              </Typography>
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Box sx={{ width: 48, height: 48, borderRadius: '50%', backgroundColor: '#1D4ED8', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
-                  PM
-                </Box>
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Priya Mehta</Typography>
-                  <Typography variant="caption" color="text.secondary">Bangalore, Karnataka</Typography>
-                </Box>
-              </Stack>
-            </GlassCard>
-          </Grid>
-
-          <Grid item xs={12} md={4}>
-            <GlassCard sx={{ p: 4 }}>
-              <Typography variant="body1" sx={{ fontStyle: 'italic', mb: 3, color: 'text.secondary', lineHeight: 1.7 }}>
-                "Amazing customer support and quick disbursement. Truly a great experience."
-              </Typography>
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Box sx={{ width: 48, height: 48, borderRadius: '50%', backgroundColor: '#D4AF37', color: '#051833', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
-                  SP
-                </Box>
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Sandeep Patel</Typography>
-                  <Typography variant="caption" color="text.secondary">Mumbai, Maharashtra</Typography>
-                </Box>
-              </Stack>
-            </GlassCard>
-          </Grid>
-        </Grid>
-      </Container>
-
-      {/* FAQ Section */}
-      <Container maxWidth="md" id="faq">
-        <Typography variant="h2" color="primary" align="center" gutterBottom sx={{ fontWeight: 800 }}>
+      {/* Accordion FAQs Section */}
+      <Container maxWidth="md" sx={{ mb: 12 }}>
+        <Typography variant="h2" color="primary" align="center" gutterBottom sx={{ fontWeight: 800, fontFamily: '"Poppins", sans-serif' }}>
           Frequently Asked Questions
         </Typography>
-        <Typography variant="body1" color="text.secondary" align="center" sx={{ mb: 8 }}>
-          Got questions? We have answers.
+        <Typography variant="body1" color="text.secondary" align="center" sx={{ mb: 6, fontWeight: 500 }}>
+          Find answers to common queries regarding application, documents, and disbursal.
         </Typography>
 
-        <Accordion sx={{ mb: 2, borderRadius: '8px !important' }}>
-          <AccordionSummary expandIcon={<ExpandMore />}>
-            <Typography sx={{ fontWeight: 600 }}>What documents are required for a personal loan?</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Typography color="text.secondary">
-              Generally, you need PAN Card, Aadhaar Card, and income proof (bank statement or salary slip).
-            </Typography>
-          </AccordionDetails>
-        </Accordion>
+        <Box sx={{ mt: 4 }}>
+          <Accordion
+            sx={{
+              mb: 2,
+              borderRadius: '12px !important',
+              border: '1px solid rgba(226, 232, 240, 0.8)',
+              boxShadow: '0 4px 12px rgba(15, 23, 42, 0.02)',
+              '&:before': { display: 'none' },
+              '&.Mui-expanded': {
+                boxShadow: '0 12px 24px rgba(15, 23, 42, 0.06)',
+                borderColor: 'rgba(11, 46, 89, 0.15)',
+              }
+            }}
+          >
+            <AccordionSummary expandIcon={<ExpandMore color="primary" />}>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: '#0B2E59', py: 0.5 }}>What are the eligibility criteria for a personal loan?</Typography>
+            </AccordionSummary>
+            <AccordionDetails sx={{ borderTop: '1px solid #F1F5F9', pt: 2.5 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7, fontWeight: 500 }}>
+                Applicants must be Indian citizens aged between 21 and 60, with a regular source of monthly income. The minimum salary threshold is ₹25,000 per month, and total monthly debts (proposed loan EMI + current outstanding commitments) must not exceed 50% of monthly gross income.
+              </Typography>
+            </AccordionDetails>
+          </Accordion>
 
-        <Accordion sx={{ mb: 2, borderRadius: '8px !important' }}>
-          <AccordionSummary expandIcon={<ExpandMore />}>
-            <Typography sx={{ fontWeight: 600 }}>How long does the approval take?</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Typography color="text.secondary">
-              It typically takes a few minutes for digital pre-evaluation, and final sanction within 24-48 business hours.
-            </Typography>
-          </AccordionDetails>
-        </Accordion>
+          <Accordion
+            sx={{
+              mb: 2,
+              borderRadius: '12px !important',
+              border: '1px solid rgba(226, 232, 240, 0.8)',
+              boxShadow: '0 4px 12px rgba(15, 23, 42, 0.02)',
+              '&:before': { display: 'none' },
+              '&.Mui-expanded': {
+                boxShadow: '0 12px 24px rgba(15, 23, 42, 0.06)',
+                borderColor: 'rgba(11, 46, 89, 0.15)',
+              }
+            }}
+          >
+            <AccordionSummary expandIcon={<ExpandMore color="primary" />}>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: '#0B2E59', py: 0.5 }}>What documentation is required for evaluation?</Typography>
+            </AccordionSummary>
+            <AccordionDetails sx={{ borderTop: '1px solid #F1F5F9', pt: 2.5 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7, fontWeight: 500 }}>
+                We utilize a completely digital verification pipeline. You only need your Aadhaar card linked to a mobile number for identity verification, a PAN card for automatic credit bureau evaluations, and access to online banking for income statements.
+              </Typography>
+            </AccordionDetails>
+          </Accordion>
 
-        <Accordion sx={{ mb: 2, borderRadius: '8px !important' }}>
-          <AccordionSummary expandIcon={<ExpandMore />}>
-            <Typography sx={{ fontWeight: 600 }}>What is the minimum credit score required?</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Typography color="text.secondary">
-              A credit score of 700 or above is ideal, though we evaluate multiple indicators to match your limit requests.
-            </Typography>
-          </AccordionDetails>
-        </Accordion>
-
-        <Accordion sx={{ mb: 2, borderRadius: '8px !important' }}>
-          <AccordionSummary expandIcon={<ExpandMore />}>
-            <Typography sx={{ fontWeight: 600 }}>Can I foreclose my loan?</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Typography color="text.secondary">
-              Yes, foreclosure is supported. Check the Terms of Service for specific foreclosure charges and guidelines.
-            </Typography>
-          </AccordionDetails>
-        </Accordion>
+          <Accordion
+            sx={{
+              mb: 2,
+              borderRadius: '12px !important',
+              border: '1px solid rgba(226, 232, 240, 0.8)',
+              boxShadow: '0 4px 12px rgba(15, 23, 42, 0.02)',
+              '&:before': { display: 'none' },
+              '&.Mui-expanded': {
+                boxShadow: '0 12px 24px rgba(15, 23, 42, 0.06)',
+                borderColor: 'rgba(11, 46, 89, 0.15)',
+              }
+            }}
+          >
+            <AccordionSummary expandIcon={<ExpandMore color="primary" />}>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: '#0B2E59', py: 0.5 }}>How long does it take for loan disbursement?</Typography>
+            </AccordionSummary>
+            <AccordionDetails sx={{ borderTop: '1px solid #F1F5F9', pt: 2.5 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7, fontWeight: 500 }}>
+                Once approved by the system and digital agreements are e-signed, disbursal evaluation is triggered. Under normal operating conditions, the approved loan amount is directly credited to your registered salary account within 2 hours.
+              </Typography>
+            </AccordionDetails>
+          </Accordion>
+        </Box>
       </Container>
 
-      {/* MULTI-STEP APPLY NOW MODAL WIZARD */}
-      <Dialog open={wizardOpen} onClose={handleCloseWizard} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ backgroundColor: '#0B2E59', color: '#FFFFFF', py: 2.5 }}>
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <Fingerprint sx={{ color: '#D4AF37' }} />
-            <Typography variant="h5" sx={{ fontWeight: 700, color: '#FFFFFF' }}>
-              Apex Fast Loan Application Wizard
+      {/* Multi-step Apply Now Flow Dialog Wizard */}
+      <Dialog 
+        open={wizardOpen} 
+        onClose={handleCloseWizard} 
+        maxWidth="sm" 
+        fullWidth 
+        PaperProps={{ sx: { borderRadius: 4, overflow: 'hidden', boxShadow: '0 24px 60px rgba(0,0,0,0.15)' } }}
+      >
+        {/* Header Block */}
+        <Box sx={{ background: 'linear-gradient(135deg, #050D1A 0%, #0B2E59 100%)', color: '#FFFFFF', px: 4, py: 3.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box>
+            <Typography variant="h5" sx={{ fontWeight: 800, fontFamily: '"Poppins", sans-serif' }}>
+              Apply For Personal Loan
             </Typography>
-          </Stack>
-        </DialogTitle>
+            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>
+              Step {wizardStep + 1} of 5 • Fast Track Pipeline
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', p: 1, borderRadius: 2, backgroundColor: 'rgba(212, 175, 55, 0.1)' }}>
+            <Security sx={{ color: '#D4AF37', fontSize: 22 }} />
+          </Box>
+        </Box>
 
-        <DialogContent sx={{ mt: 3 }}>
-          {/* Stepper progress */}
-          <Stepper activeStep={wizardStep} alternativeLabel sx={{ mb: 4 }}>
-            <Step><StepLabel>Eligibility</StepLabel></Step>
-            <Step><StepLabel>Mobile</StepLabel></Step>
-            <Step><StepLabel>OTP</StepLabel></Step>
-            <Step><StepLabel>Security</StepLabel></Step>
-          </Stepper>
-
+        <DialogContent sx={{ px: 4, py: 4 }}>
           {wizardError && (
-            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+            <Alert severity="error" sx={{ mb: 3, borderRadius: 2, fontWeight: 500 }}>
               {wizardError}
             </Alert>
           )}
 
-          {/* STEP 0: ELIGIBILITY CHECK */}
+          {/* STEP 0: Pre-Evaluation (Inputs) */}
           {wizardStep === 0 && (
             <Box>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Let's perform a fast pre-eligibility evaluation to determine your primary credit matching limits.
+              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0B2E59', mb: 1.5 }}>
+                Enter Financial Details
               </Typography>
-              <Grid container spacing={2.5}>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Gross Monthly Income (₹)"
-                    value={incomeInput}
-                    onChange={(e) => setIncomeInput(e.target.value.replace(/\D/g, ''))}
-                    fullWidth
-                    required
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Existing Monthly EMIs (₹)"
-                    value={emiInput}
-                    onChange={(e) => setEmiInput(e.target.value.replace(/\D/g, ''))}
-                    fullWidth
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Requested Loan Amount (₹)"
-                    value={amountInput}
-                    onChange={(e) => setAmountInput(e.target.value.replace(/\D/g, ''))}
-                    fullWidth
-                    required
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Requested Tenure (Months)"
-                    value={tenureInput}
-                    onChange={(e) => setTenureInput(e.target.value.replace(/\D/g, ''))}
-                    fullWidth
-                    required
-                  />
-                </Grid>
-              </Grid>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3, fontWeight: 500 }}>
+                Please provide accurate estimates to verify standard eligibility criteria.
+              </Typography>
+
+              <Stack spacing={3}>
+                <TextField
+                  label="Gross Monthly Income"
+                  variant="outlined"
+                  fullWidth
+                  value={incomeInput}
+                  onChange={(e) => setIncomeInput(e.target.value.replace(/\D/g, ''))}
+                  required
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start" sx={{ color: 'primary.main', fontWeight: 700 }}>₹</InputAdornment>
+                  }}
+                />
+                <TextField
+                  label="Existing Monthly EMIs"
+                  variant="outlined"
+                  fullWidth
+                  value={emiInput}
+                  onChange={(e) => setEmiInput(e.target.value.replace(/\D/g, ''))}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start" sx={{ color: 'primary.main', fontWeight: 700 }}>₹</InputAdornment>
+                  }}
+                />
+                <TextField
+                  label="Requested Loan Amount"
+                  variant="outlined"
+                  fullWidth
+                  value={amountInput}
+                  onChange={(e) => setAmountInput(e.target.value.replace(/\D/g, ''))}
+                  required
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start" sx={{ color: 'primary.main', fontWeight: 700 }}>₹</InputAdornment>
+                  }}
+                />
+                <TextField
+                  label="Requested Tenure (Months)"
+                  variant="outlined"
+                  fullWidth
+                  value={tenureInput}
+                  onChange={(e) => setTenureInput(e.target.value.replace(/\D/g, ''))}
+                  required
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end" sx={{ color: 'text.secondary', fontWeight: 700, fontSize: '0.8rem' }}>Months</InputAdornment>
+                  }}
+                />
+              </Stack>
             </Box>
           )}
 
-          {/* STEP 1: MOBILE NUMBER INPUT */}
+          {/* STEP 1: Mobile Number Validation */}
           {wizardStep === 1 && (
-            <Box sx={{ textAlign: 'center', py: 2 }}>
-              <PhoneIphone sx={{ fontSize: 56, color: 'primary.main', mb: 2 }} />
-              <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>Enter Mobile Number</Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Provide your mobile number to trigger an OTP authorization verification code.
+            <Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0B2E59', mb: 1.5 }}>
+                Enter Mobile Number
               </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3, fontWeight: 500 }}>
+                Please provide your Aadhaar-linked phone number to initiate verification.
+              </Typography>
+
               <TextField
-                label="Mobile Number (10 digits)"
+                label="Mobile Number"
+                variant="outlined"
+                fullWidth
                 value={mobileNum}
                 onChange={(e) => setMobileNum(e.target.value.replace(/\D/g, ''))}
-                fullWidth
                 required
+                placeholder="9876543210"
                 InputProps={{
-                  startAdornment: <InputAdornment position="start">+91 </InputAdornment>,
+                  startAdornment: <InputAdornment position="start" sx={{ color: 'primary.main', fontWeight: 700 }}>+91</InputAdornment>
                 }}
-                sx={{ maxWidth: 360, mx: 'auto' }}
               />
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2.5, fontWeight: 500 }}>
+                ℹ️ Demo Note: Odd numbers (e.g. 9876543211) simulate existing accounts; even numbers simulate fresh registrations.
+              </Typography>
             </Box>
           )}
 
-          {/* STEP 2: OTP VERIFICATION */}
+          {/* STEP 2: OTP Entry Verification */}
           {wizardStep === 2 && (
-            <Box sx={{ textAlign: 'center', py: 2 }}>
-              <LockOutlined sx={{ fontSize: 56, color: 'primary.main', mb: 2 }} />
-              <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>Verify OTP Code</Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Enter the 6-digit verification code sent to <strong>+91 {mobileNum}</strong>. (Use demo code: <strong>123456</strong>)
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0B2E59', mb: 1.5, textAlign: 'left' }}>
+                Verify OTP
               </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 4, textAlign: 'left', fontWeight: 500 }}>
+                We sent a security code to **+91 {mobileNum}**. Please enter it below.
+              </Typography>
+
               <TextField
-                label="6-Digit OTP Code"
+                variant="outlined"
                 value={otpCode}
                 onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                fullWidth
                 required
-                inputProps={{ maxLength: 6, style: { textAlign: 'center', fontSize: '1.25rem', letterSpacing: '4px' } }}
-                sx={{ maxWidth: 280, mx: 'auto' }}
+                placeholder="••••••"
+                inputProps={{
+                  maxLength: 6,
+                  style: { textAlign: 'center', letterSpacing: '0.8rem', fontSize: '1.5rem', fontWeight: 800, color: '#0B2E59' }
+                }}
+                sx={{ width: '80%', maxWidth: 280, mx: 'auto', mb: 3 }}
               />
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 600 }}>
+                💡 Tip: Use verification code **123456** to proceed.
+              </Typography>
             </Box>
           )}
 
-          {/* STEP 3: LOGIN / REGISTER BASED ON USER RECOGNITION */}
+          {/* STEP 3: Register/Login details */}
           {wizardStep === 3 && (
             <Box>
-              <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, textAlign: 'center' }}>
-                {isExistingUser ? 'Welcome Back! Secure Login' : 'Secure Registration Profile'}
+              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0B2E59', mb: 1.5 }}>
+                {isExistingUser ? 'Welcome Back! Log In' : 'Create Secure Account'}
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3, textAlign: 'center' }}>
-                {isExistingUser
-                  ? 'We recognized your mobile number in our system. Please sign in to link your application.'
-                  : 'Let\'s create a new secure portal account to complete your loan checklist.'}
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3, fontWeight: 500 }}>
+                {isExistingUser 
+                  ? 'We found an account under this number. Enter credentials to log in.' 
+                  : 'Establish credentials to encrypt and preserve your application session.'}
               </Typography>
 
               <form onSubmit={handleAuthSubmit}>
-                <Stack spacing={2.5}>
+                <Stack spacing={3}>
                   <TextField
                     label="Email Address"
+                    variant="outlined"
                     type="email"
+                    fullWidth
                     value={emailInput}
                     onChange={(e) => setEmailInput(e.target.value)}
-                    fullWidth
                     required
                   />
                   <TextField
-                    label="Secure Account Password"
+                    label="Password"
+                    variant="outlined"
                     type="password"
+                    fullWidth
                     value={passwordInput}
                     onChange={(e) => setPasswordInput(e.target.value)}
-                    fullWidth
                     required
                   />
                   {!isExistingUser && (
                     <TextField
                       label="Confirm Password"
+                      variant="outlined"
                       type="password"
+                      fullWidth
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      fullWidth
                       required
                     />
                   )}
-                  
                   <Button
                     type="submit"
                     variant="contained"
-                    color="primary"
-                    size="large"
+                    fullWidth
                     disabled={isSubmitting}
-                    sx={{ py: 1.5, mt: 2 }}
+                    sx={{ py: 1.8, mt: 1, fontWeight: 700, borderRadius: 2 }}
                   >
-                    {isSubmitting ? <CircularProgress size={24} color="inherit" /> : (isExistingUser ? 'Sign In & Apply' : 'Register & Apply')}
+                    {isSubmitting ? <CircularProgress size={24} color="inherit" /> : (isExistingUser ? 'Log In & Continue' : 'Create Account & Continue')}
                   </Button>
                 </Stack>
               </form>
             </Box>
           )}
 
-          {/* STEP 4: SUCCESS SUMMARY */}
+          {/* STEP 4: Success Message */}
           {wizardStep === 4 && (
-            <Box sx={{ textAlign: 'center', py: 4 }}>
-              <CheckCircle color="success" sx={{ fontSize: 72, mb: 2 }} />
-              <Typography variant="h4" sx={{ fontWeight: 800, color: 'success.main', mb: 2 }}>
-                Authentication Success!
+            <Box sx={{ textAlign: 'center', py: 2 }}>
+              <CheckCircle color="success" sx={{ fontSize: 64, mb: 2 }} />
+              <Typography variant="h5" sx={{ fontWeight: 800, color: '#0B2E59', mb: 1.5 }}>
+                Identity Verified Successfully!
               </Typography>
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-                Your fast eligibility checks matched successfully. We are redirecting you to your customer portal workspace to finalize document uploads and complete your application.
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 4, px: 2, fontWeight: 500, lineHeight: 1.7 }}>
+                Welcome, **{emailInput}**. Your authentication credentials have been stored securely. Let's head over to the workspace dashboard.
               </Typography>
               <Button
-                variant="contained"
-                color="success"
-                size="large"
                 onClick={() => {
                   handleCloseWizard();
                   navigate('/dashboard');
                 }}
-                sx={{ py: 1.5, px: 6, borderRadius: 3 }}
+                variant="contained"
+                size="large"
+                endIcon={<ArrowForward />}
+                sx={{ py: 1.8, px: 5, borderRadius: 2, fontWeight: 700 }}
               >
-                Go to Workspace
+                Go To My Dashboard
               </Button>
             </Box>
           )}
         </DialogContent>
 
+        {/* Footer controls for steps 0 to 2 */}
         {wizardStep < 3 && (
-          <DialogActions sx={{ p: 3, borderTop: '1px solid rgba(0,0,0,0.06)' }}>
-            <Button onClick={handleCloseWizard} variant="outlined">
-              Cancel
+          <DialogActions sx={{ px: 4, pb: 4, pt: 0, justifyContent: 'space-between' }}>
+            <Button 
+              onClick={() => {
+                if (wizardStep === 0) handleCloseWizard();
+                else setWizardStep(wizardStep - 1);
+              }}
+              sx={{ fontWeight: 700, color: 'text.secondary' }}
+            >
+              Back
             </Button>
-            {wizardStep === 0 && (
-              <Button onClick={handleProceedEligibility} variant="contained" color="primary">
-                Proceed Check
-              </Button>
-            )}
-            {wizardStep === 1 && (
-              <Button onClick={handleSendOtp} variant="contained" color="primary">
-                Send OTP Code
-              </Button>
-            )}
-            {wizardStep === 2 && (
-              <Button onClick={handleVerifyOtp} variant="contained" color="primary">
-                Verify OTP
-              </Button>
-            )}
+            <Button
+              variant="contained"
+              onClick={() => {
+                if (wizardStep === 0) handleProceedEligibility();
+                else if (wizardStep === 1) handleSendOtp();
+                else if (wizardStep === 2) handleVerifyOtp();
+              }}
+              sx={{ px: 4, py: 1.3, fontWeight: 700, borderRadius: 2 }}
+            >
+              Continue
+            </Button>
           </DialogActions>
         )}
       </Dialog>
